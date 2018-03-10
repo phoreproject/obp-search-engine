@@ -20,7 +20,7 @@ func NewSQLDatastore(db *sql.DB) (*SQLDatastore, error) {
 	if err != nil {
 		return nil, err
 	}
-	_, err = db.Exec("CREATE TABLE IF NOT EXISTS items (owner VARCHAR(50), hash VARCHAR(50) NOT NULL, slug VARCHAR(70), title VARCHAR(140), tags VARCHAR(410), description VARCHAR(50000), thumbnail VARCHAR(160), language VARCHAR(20), priceAmount BIGINT, priceCurrency VARCHAR(10), categories VARCHAR(410), nsfw TINYINT(1), contractType VARCHAR(20), PRIMARY KEY (hash))")
+	_, err = db.Exec("CREATE TABLE IF NOT EXISTS items (owner VARCHAR(50), hash VARCHAR(50) NOT NULL, slug VARCHAR(70), title VARCHAR(140), tags VARCHAR(410), description VARCHAR(50000), thumbnail VARCHAR(160), language VARCHAR(20), priceAmount BIGINT, priceCurrency VARCHAR(10), categories VARCHAR(410), nsfw TINYINT(1), contractType VARCHAR(20), rating DECIMAL(3, 2), PRIMARY KEY (hash))")
 	if err != nil {
 		return nil, err
 	}
@@ -114,7 +114,7 @@ func (d *SQLDatastore) AddItemsForNode(owner string, items []crawling.Item) erro
 	}
 
 	for i := range items {
-		s, err = tx.Prepare("INSERT INTO items (owner, hash, slug, title, tags, description, thumbnail, language, priceAmount, priceCurrency, categories, nsfw, contractType) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+		s, err = tx.Prepare("INSERT INTO items (owner, hash, slug, title, tags, description, thumbnail, language, priceAmount, priceCurrency, categories, nsfw, contractType, rating) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
 		if err != nil {
 			return err
 		}
@@ -133,6 +133,7 @@ func (d *SQLDatastore) AddItemsForNode(owner string, items []crawling.Item) erro
 			strings.Join(items[i].Categories, ","),
 			items[i].NSFW,
 			items[i].ContractType,
+			items[i].AverageRating,
 		)
 		if err != nil {
 			return err
