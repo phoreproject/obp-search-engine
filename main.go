@@ -37,8 +37,13 @@ func main() {
 		panic(err)
 	}
 
+	profile, err := r.GetProfile(config.PeerID)
+	if err != nil {
+		panic(err)
+	}
+
 	// add ourselves
-	err = c.DB.SaveNode(crawling.Node{ID: config.PeerID, Connections: []string{}})
+	err = c.DB.SaveNode(crawling.Node{ID: config.PeerID, Connections: []string{}, Profile: profile})
 	if err != nil {
 		panic(err)
 	}
@@ -51,10 +56,6 @@ func main() {
 
 			if err != nil {
 				panic(err)
-			}
-
-			if len(nodeID) < 40 {
-				nodeID = config.PeerID
 			}
 
 			fmt.Printf("Crawling %s\n", nodeID)

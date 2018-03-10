@@ -16,7 +16,7 @@ type SQLDatastore struct {
 
 // NewSQLDatastore creates a new datastore given MySQL connection info
 func NewSQLDatastore(db *sql.DB) (*SQLDatastore, error) {
-	_, err := db.Exec("CREATE TABLE IF NOT EXISTS nodes (id VARCHAR(50) NOT NULL, lastUpdated DATETIME, PRIMARY KEY (id))")
+	_, err := db.Exec("CREATE TABLE IF NOT EXISTS nodes (id VARCHAR(50) NOT NULL, lastUpdated DATETIME, name VARCHAR(40), handle VARCHAR(40), location VARCHAR(40), nsfw TINYINT(1), vendor TINYINT(1), moderator TINYINT(1), about VARCHAR(10000), shortDescription VARCHAR(160), followerCount INT, followingCount INT, listingCount INT, postCount INT, ratingCount INT, averageRating DECIMAL(3, 2), PRIMARY KEY (id))")
 	if err != nil {
 		return nil, err
 	}
@@ -40,7 +40,7 @@ func (d *SQLDatastore) GetNextNode() (*crawling.Node, error) {
 
 // SaveNode saves a node to the database
 func (d *SQLDatastore) SaveNode(n crawling.Node) error {
-	insertStatement, err := d.db.Prepare("INSERT INTO nodes (id, lastUpdated) VALUES (?, NOW()) ON DUPLICATE KEY UPDATE lastUpdated=NOW()")
+	insertStatement, err := d.db.Prepare("INSERT INTO nodes (id, lastUpdated, name, handle, location, nsfw, vendor, moderator, about, shortDescription, followerCount, followingCount, listingCount, postCount, ratingCount, averageRating) VALUES (?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE lastUpdated=NOW(), name=?, handle=?, location=?, nsfw=?, vendor=?, moderator=?, about=?, shortDescription=?, followerCount=?, followingCount=?, listingCount=?, postCount=?, ratingCount=?, averageRating=?")
 	if err != nil {
 		return err
 	}
@@ -50,7 +50,37 @@ func (d *SQLDatastore) SaveNode(n crawling.Node) error {
 		return err
 	}
 
-	_, err = tx.Stmt(insertStatement).Exec(n.ID)
+	_, err = tx.Stmt(insertStatement).Exec(
+		n.ID,
+		n.Profile.Name,
+		n.Profile.Handle,
+		n.Profile.Location,
+		n.Profile.Nsfw,
+		n.Profile.Vendor,
+		n.Profile.Moderator,
+		n.Profile.About,
+		n.Profile.ShortDescription,
+		n.Profile.Stats.FollowerCount,
+		n.Profile.Stats.FollowingCount,
+		n.Profile.Stats.ListingCount,
+		n.Profile.Stats.PostCount,
+		n.Profile.Stats.RatingCount,
+		n.Profile.Stats.AverageRating,
+		n.Profile.Name,
+		n.Profile.Handle,
+		n.Profile.Location,
+		n.Profile.Nsfw,
+		n.Profile.Vendor,
+		n.Profile.Moderator,
+		n.Profile.About,
+		n.Profile.ShortDescription,
+		n.Profile.Stats.FollowerCount,
+		n.Profile.Stats.FollowingCount,
+		n.Profile.Stats.ListingCount,
+		n.Profile.Stats.PostCount,
+		n.Profile.Stats.RatingCount,
+		n.Profile.Stats.AverageRating,
+	)
 	if err != nil {
 		return err
 	}
@@ -114,7 +144,7 @@ func (d *SQLDatastore) AddItemsForNode(owner string, items []crawling.Item) erro
 	}
 
 	for i := range items {
-		s, err = tx.Prepare("INSERT INTO items (owner, hash, slug, title, tags, description, thumbnail, language, priceAmount, priceCurrency, categories, nsfw, contractType, rating) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+		s, err = tx.Prepare("INSERT INTO items (owner, hash, slug, title, tags, description, thumbnail, language, priceAmount, priceCurrency, categories, nsfw, contractType, rating) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE slug=?, title=?, tags=?, description=?, thumbnail=?, language=?, priceAmount=?, priceCurrency=?, categories=?, nsfw=?, contractType=?, rating=?")
 		if err != nil {
 			return err
 		}
@@ -122,6 +152,18 @@ func (d *SQLDatastore) AddItemsForNode(owner string, items []crawling.Item) erro
 		_, err = s.Exec(
 			owner,
 			items[i].Hash,
+			items[i].Slug,
+			items[i].Title,
+			"",
+			items[i].Description,
+			items[i].Thumbnail.Tiny+","+items[i].Thumbnail.Small+","+items[i].Thumbnail.Medium,
+			items[i].Language,
+			items[i].Price.Amount,
+			items[i].Price.CurrencyCode,
+			strings.Join(items[i].Categories, ","),
+			items[i].NSFW,
+			items[i].ContractType,
+			items[i].AverageRating,
 			items[i].Slug,
 			items[i].Title,
 			"",

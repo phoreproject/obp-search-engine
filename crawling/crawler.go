@@ -27,7 +27,7 @@ func (c Crawler) CrawlOnce() (string, error) {
 
 	nodes := make([]Node, len(connections))
 	for i := range connections {
-		if connections[i] != nextNode.ID && len(connections[i]) > 40 {
+		if connections[i] != nextNode.ID && len(connections[i]) > 40 && connections[i][0] != ' ' {
 			nodes[i] = Node{ID: connections[i], Connections: []string{}, LastCrawled: time.Date(2017, 12, 13, 0, 0, 0, 0, time.Local)}
 		}
 	}
@@ -38,6 +38,14 @@ func (c Crawler) CrawlOnce() (string, error) {
 		return "", err
 	}
 
-	c.DB.SaveNode(*nextNode)
+	profile, err := c.RPCInterface.GetProfile(nextNode.ID)
+	if err != nil {
+		return "", err
+	}
+	if profile.Stats != nil {
+		nextNode.Profile = profile
+
+		c.DB.SaveNode(*nextNode)
+	}
 	return nextNode.ID, nil
 }

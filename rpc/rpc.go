@@ -3,6 +3,7 @@ package rpc
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"path"
 
@@ -73,7 +74,15 @@ func (r OpenBazaarRPC) GetConnections(id string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	return response, nil
+
+	ret := []string{}
+	for p := range response {
+		if response[p][0] != ' ' {
+			ret = append(ret, response[p])
+		}
+	}
+
+	return ret, nil
 }
 
 // GetItems gets items for a specific node
@@ -97,4 +106,29 @@ func (r OpenBazaarRPC) GetItems(id string) ([]crawling.Item, error) {
 		return nil, err
 	}
 	return response, nil
+}
+
+// GetProfile gets the profile for a specific node
+func (r OpenBazaarRPC) GetProfile(id string) (*crawling.ProfileResponse, error) {
+	req, err := http.NewRequest("GET", "http://"+path.Join(r.URL, "ob", "profile", id), nil)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := r.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	responseRaw := new(bytes.Buffer)
+	responseRaw.ReadFrom(resp.Body)
+	var response crawling.ProfileResponse
+	err = json.Unmarshal(responseRaw.Bytes(), &response)
+	if err := json.Unmarshal(responseRaw.Bytes(), &response); err != nil {
+		fmt.Println(err)
+		var possibleError ErrorResponse
+		if err := json.Unmarshal(responseRaw.Bytes(), &possibleError); err == nil {
+			return nil, nil // fail silently
+		}
+		return nil, err
+	}
+	return &response, nil
 }
