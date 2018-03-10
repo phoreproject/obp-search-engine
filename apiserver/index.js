@@ -3,7 +3,7 @@ const app = express()
 const Sequelize = require("sequelize")
 const path = require("path")
 
-const sequelize = new Sequelize(process.env.DATABASE_URI || "mysql://root@localhost:3306/obpsearch", {omitNull: true, logging: false });
+const sequelize = new Sequelize(process.env.DATABASE_URI || "mysql://root@localhost:3306/obpsearch", {omitNull: true, logging: true });
 
 const Item = sequelize.import("./models/item")
 
@@ -40,18 +40,36 @@ app.get('/search/listings', (req, res) => {
             }[Number(req.query.rating)]
         }
     }
-    options.order = []
-    
+    options.order = [[]]
+
     if (orderBy.startsWith("PRICE")) {
-        options.order[0] = "price"
+        options.order[0][0] = "priceAmount"
     } else if (orderBy.startsWith("RATING")) {
-        options.order[0] = "rating"
+        options.order[0][0] = "rating"
     }
     if (orderBy.endsWith("DESC")) {
-        options.order[1] = "DESC"
+        options.order[0][1] = "DESC"
     } else if (orderBy.endsWith("ASC")) {
-        options.order[1] = "ASC"
+        options.order[0][1] = "ASC"
     }
+    if (options.order[0].length == 0) {
+        options.order = undefined
+    }
+    console.log(req.query.q)
+    let query = {
+        [sequelize.Op.like]: "%"
+    }
+    if (req.query.q && req.query.q !== "*") {
+        const words = req.query.q.replace(/[^\w]/g, "").split(" ").map((word) => {
+            return {
+                [sequelize.Op.like]: "%" + word + "%"
+            }
+        })
+        query = {
+            [sequelize.Op.or]: words
+        }
+    }
+    options.where.title = query
     Item.findAndCountAll(options).then((out) => {
         const result = Object.assign(config, {
             results: {
