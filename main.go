@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"flag"
 	"fmt"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/phoreproject/obp-search-engine/crawling"
@@ -43,12 +44,43 @@ func main() {
 	}
 
 	for {
-		nodeID, err := c.CrawlOnce()
+		done := make(chan bool)
+		timeout := make(chan bool)
+		go func() {
+			nodeID, err := c.CrawlOnce()
 
-		if err != nil {
-			panic(err)
+			if err != nil {
+				panic(err)
+			}
+
+			if len(nodeID) < 40 {
+				nodeID = config.PeerID
+			}
+
+			fmt.Printf("Crawling %s\n", nodeID)
+
+			items, err := c.RPCInterface.GetItems(nodeID)
+			if err != nil {
+				panic(err)
+			}
+
+			fmt.Printf("Found %d items.\n", len(items))
+
+			err = c.DB.AddItemsForNode(nodeID, items)
+			if err != nil {
+				panic(err)
+			}
+			done <- true
+		}()
+		go func() {
+			time.Sleep(time.Second * 10)
+			timeout <- true
+		}()
+		select {
+		case <-done:
+			break
+		case <-time.After(10 * time.Second):
+			break
 		}
-
-		fmt.Printf("Crawling %s\n", nodeID)
 	}
 }

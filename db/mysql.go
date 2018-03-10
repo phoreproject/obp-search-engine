@@ -1,8 +1,10 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
+	"strings"
 
 	"github.com/phoreproject/obp-search-engine/crawling"
 )
@@ -15,6 +17,10 @@ type SQLDatastore struct {
 // NewSQLDatastore creates a new datastore given MySQL connection info
 func NewSQLDatastore(db *sql.DB) (*SQLDatastore, error) {
 	_, err := db.Exec("CREATE TABLE IF NOT EXISTS nodes (id VARCHAR(50) NOT NULL, lastUpdated DATETIME, PRIMARY KEY (id))")
+	if err != nil {
+		return nil, err
+	}
+	_, err = db.Exec("CREATE TABLE IF NOT EXISTS items (owner VARCHAR(50), hash VARCHAR(50) NOT NULL, slug VARCHAR(70), title VARCHAR(140), tags VARCHAR(410), description VARCHAR(50000), thumbnail VARCHAR(160), language VARCHAR(20), priceAmount BIGINT, priceCurrency VARCHAR(10), categories VARCHAR(410), nsfw TINYINT(1), contractType VARCHAR(20), PRIMARY KEY (hash))")
 	if err != nil {
 		return nil, err
 	}
@@ -87,4 +93,52 @@ func (d *SQLDatastore) GetNode(nodeID string) (*crawling.Node, error) {
 		return nil, err
 	}
 	return node, nil
+}
+
+// AddItemsForNode updates a node with the following items
+func (d *SQLDatastore) AddItemsForNode(owner string, items []crawling.Item) error {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	tx, err := d.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	s, err := tx.Prepare("DELETE FROM items WHERE owner = ?")
+	if err != nil {
+		return err
+	}
+
+	_, err = s.Exec(owner)
+	if err != nil {
+		return err
+	}
+
+	for i := range items {
+		s, err = tx.Prepare("INSERT INTO items (owner, hash, slug, title, tags, description, thumbnail, language, priceAmount, priceCurrency, categories, nsfw, contractType) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+		if err != nil {
+			return err
+		}
+
+		_, err = s.Exec(
+			owner,
+			items[i].Hash,
+			items[i].Slug,
+			items[i].Title,
+			"",
+			items[i].Description,
+			items[i].Thumbnail.Tiny+","+items[i].Thumbnail.Small+","+items[i].Thumbnail.Medium,
+			items[i].Language,
+			items[i].Price.Amount,
+			items[i].Price.CurrencyCode,
+			strings.Join(items[i].Categories, ","),
+			items[i].NSFW,
+			items[i].ContractType,
+		)
+		if err != nil {
+			return err
+		}
+	}
+
+	err = tx.Commit()
+	return err
 }
