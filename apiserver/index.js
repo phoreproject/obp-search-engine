@@ -1,13 +1,14 @@
 const express = require("express")
 const app = express()
 const Sequelize = require("sequelize")
+const path = require("path")
 
 const sequelize = new Sequelize(process.env.DATABASE_URI || "mysql://root@localhost:3306/obpsearch", {omitNull: true, logging: false });
 
 const Item = sequelize.import("./models/item")
 
 app.get("/logo.png", (req, res) => {
-    res.sendFile("./static/logo.png")
+    res.sendFile("logo.png", {root: path.join(__dirname)})
 })
 
 const config = require('./config')
@@ -18,13 +19,13 @@ app.get("/", (req, res) => {
 
 app.get('/search/listings', (req, res) => {
     const options = {}  
-    const page = req.query.p || 1
+    const page = req.query.p || 0
     const ps = Math.min(req.query.ps || 20, 100)
     const nsfw = req.query.nsfw || false
     const orderBy = req.query.sortBy || "RELEVANCE"
     
     options.limit = ps
-    options.offset = ps * (page - 1)
+    options.offset = ps * page
     options.where = {}
     options.where.nsfw = nsfw
 
@@ -64,14 +65,12 @@ app.get('/search/listings', (req, res) => {
             result.results.results.push({
                 type: "listing",
                 relationships: {
-                    peerID: r.owner,
-                    handle: "",
-                    avatarHashes: {
-                        tiny: thumbnails[0], // TODO: this is wrong
-                        small: thumbnails[1],
-                        medium: thumbnails[2]
+                    vendor: {
+                        data: {
+                            peerID: r.owner,
+                        }
                     },
-                    moderator: []
+                    moderators: []
                 },
                 data: {
                     hash: r.hash,

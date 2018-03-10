@@ -1,11 +1,11 @@
 module.exports = {
   "name": "Phore Search",
 
-  "logo": "https://search.phore.io/logo.png",
+  "logo": "http://localhost:3000/logo.png",
 
   "links": {
     "self": "",
-    "listings": "https://search.phore.io/search/listings"
+    "listings": "http://localhost:3000/search/listings"
   },
 
   "options": {
