@@ -11,6 +11,7 @@ type Datastore interface {
 	AddUninitializedNodes([]Node) error
 	GetNode(string) (*Node, error)
 	AddItemsForNode(owner string, items []Item) error
+	SaveNodeUninitialized(Node) error
 }
 
 // Node is a representation of a single node on the network.

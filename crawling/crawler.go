@@ -1,6 +1,7 @@
 package crawling
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -25,10 +26,10 @@ func (c Crawler) CrawlOnce() (string, error) {
 		return "", err
 	}
 
-	nodes := make([]Node, len(connections))
+	nodes := []Node{}
 	for i := range connections {
 		if connections[i] != nextNode.ID && len(connections[i]) > 40 && connections[i][0] != ' ' {
-			nodes[i] = Node{ID: connections[i], Connections: []string{}, LastCrawled: time.Date(2017, 12, 13, 0, 0, 0, 0, time.Local)}
+			nodes = append(nodes, Node{ID: connections[i], Connections: []string{}, LastCrawled: time.Date(2017, 12, 13, 0, 0, 0, 0, time.Local)})
 		}
 	}
 
@@ -45,7 +46,17 @@ func (c Crawler) CrawlOnce() (string, error) {
 	if profile.Stats != nil {
 		nextNode.Profile = profile
 
-		c.DB.SaveNode(*nextNode)
+		fmt.Println("saving...")
+
+		if err := c.DB.SaveNode(*nextNode); err != nil {
+			fmt.Println(err)
+		}
+	} else {
+		fmt.Println("saving uninitialized...")
+
+		if err := c.DB.SaveNodeUninitialized(*nextNode); err != nil {
+			fmt.Println(err)
+		}
 	}
 	return nextNode.ID, nil
 }

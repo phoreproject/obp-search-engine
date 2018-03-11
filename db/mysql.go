@@ -38,14 +38,34 @@ func (d *SQLDatastore) GetNextNode() (*crawling.Node, error) {
 	return &node, nil
 }
 
-// SaveNode saves a node to the database
-func (d *SQLDatastore) SaveNode(n crawling.Node) error {
-	insertStatement, err := d.db.Prepare("INSERT INTO nodes (id, lastUpdated, name, handle, location, nsfw, vendor, moderator, about, shortDescription, followerCount, followingCount, listingCount, postCount, ratingCount, averageRating) VALUES (?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE lastUpdated=NOW(), name=?, handle=?, location=?, nsfw=?, vendor=?, moderator=?, about=?, shortDescription=?, followerCount=?, followingCount=?, listingCount=?, postCount=?, ratingCount=?, averageRating=?")
+// SaveNodeUninitialized saves a node to the database without extra data
+func (d *SQLDatastore) SaveNodeUninitialized(n crawling.Node) error {
+	tx, err := d.db.Begin()
 	if err != nil {
 		return err
 	}
 
+	insertStatement, err := tx.Prepare("INSERT INTO nodes (id, lastUpdated) VALUES (?, NOW()) ON DUPLICATE KEY UPDATE lastUpdated=NOW()")
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Stmt(insertStatement).Exec(n.ID)
+	if err != nil {
+		return err
+	}
+	err = tx.Commit()
+	return err
+}
+
+// SaveNode saves a node to the database
+func (d *SQLDatastore) SaveNode(n crawling.Node) error {
 	tx, err := d.db.Begin()
+	if err != nil {
+		return err
+	}
+
+	insertStatement, err := tx.Prepare("INSERT INTO nodes (id, lastUpdated, name, handle, location, nsfw, vendor, moderator, about, shortDescription, followerCount, followingCount, listingCount, postCount, ratingCount, averageRating) VALUES (?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE lastUpdated=NOW(), name=?, handle=?, location=?, nsfw=?, vendor=?, moderator=?, about=?, shortDescription=?, followerCount=?, followingCount=?, listingCount=?, postCount=?, ratingCount=?, averageRating=?")
 	if err != nil {
 		return err
 	}
