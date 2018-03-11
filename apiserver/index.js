@@ -6,6 +6,8 @@ const path = require("path")
 const sequelize = new Sequelize(process.env.DATABASE_URI || "mysql://root@localhost:3306/obpsearch", {omitNull: true, logging: true });
 
 const Item = sequelize.import("./models/item")
+const Node = sequelize.import("./models/node")
+Item.belongsTo(Node, {foreignKey: "owner"})
 
 app.get("/logo.png", (req, res) => {
     res.sendFile("logo.png", {root: path.join(__dirname)})
@@ -70,6 +72,7 @@ app.get('/search/listings', (req, res) => {
         }
     }
     options.where.title = query
+    options.include = [Node]
     Item.findAndCountAll(options).then((out) => {
         const result = Object.assign(config, {
             results: {
@@ -86,6 +89,23 @@ app.get('/search/listings', (req, res) => {
                     vendor: {
                         data: {
                             peerID: r.owner,
+                            name: r.node.name,
+                            handle: r.node.handle,
+                            location: r.node.location,
+                            nsfw: r.node.nsfw,
+                            vendor: r.node.vendor,
+                            moderator: r.node.moderator,
+                            about: r.node.about,
+                            shortDescription: r.node.shortDescription,
+                            lastSeen: r.node.lastUpdated,
+                            stats: {
+                                followerCount: r.node.followerCount,
+                                followingCount: r.node.followingCount,
+                                listingCount: r.node.listingCount,
+                                postCount: r.node.postCount,
+                                ratingCount: r.node.ratingCount,
+                                averageRating: r.node.averageRating,
+                            }
                         }
                     },
                     moderators: []
