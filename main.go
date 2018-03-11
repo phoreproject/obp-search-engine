@@ -43,7 +43,7 @@ func main() {
 	}
 
 	// add ourselves
-	err = c.DB.SaveNode(crawling.Node{ID: config.PeerID, Connections: []string{}, Profile: profile})
+	err = c.DB.SaveNodeUninitialized(crawling.Node{ID: config.PeerID, Connections: []string{}, Profile: profile})
 	if err != nil {
 		panic(err)
 	}
