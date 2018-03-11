@@ -3,7 +3,7 @@ const app = express()
 const Sequelize = require("sequelize")
 const path = require("path")
 
-const sequelize = new Sequelize(process.env.DATABASE_URI || "mysql://root@localhost:3306/obpsearch", {omitNull: true, logging: true });
+const sequelize = new Sequelize(process.env.DATABASE_URI || "mysql://" + process.env.RDS_USERNAME + ":" + process.env.RDS_PASSWORD + "@" + process.env.RDS_HOSTNAME + ":" + process.env.RDS_POST + "/" + process.env.RDS_DB_NAME, {omitNull: true});
 
 const Item = sequelize.import("./models/item")
 const Node = sequelize.import("./models/node")
