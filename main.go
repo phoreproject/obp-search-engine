@@ -18,7 +18,7 @@ func main() {
 	rpcURL := flag.String("rpc", "127.0.0.1:5002", "rpc url used to connect to Phore Marketplace")
 	flag.Parse()
 
-	database, err := sql.Open("mysql", *databaseURL+"?parseTime=true")
+	database, err := sql.Open("mysql", *databaseURL+"?parseTime=true&interpolateParams=true")
 	if err != nil {
 		panic(err)
 	}

@@ -49,6 +49,7 @@ func (d *SQLDatastore) SaveNodeUninitialized(n crawling.Node) error {
 	if err != nil {
 		return err
 	}
+	defer insertStatement.Close()
 
 	_, err = tx.Stmt(insertStatement).Exec(n.ID)
 	if err != nil {
@@ -69,6 +70,7 @@ func (d *SQLDatastore) SaveNode(n crawling.Node) error {
 	if err != nil {
 		return err
 	}
+	defer insertStatement.Close()
 
 	_, err = tx.Stmt(insertStatement).Exec(
 		n.ID,
@@ -120,6 +122,7 @@ func (d *SQLDatastore) AddUninitializedNodes(nodes []crawling.Node) error {
 		if err != nil {
 			return err
 		}
+		defer insertStatement.Close()
 
 		_, err = tx.Stmt(insertStatement).Exec(nodes[n].ID)
 		if err != nil {
@@ -136,6 +139,7 @@ func (d *SQLDatastore) GetNode(nodeID string) (*crawling.Node, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer s.Close()
 	r := s.QueryRow(nodeID)
 	node := &crawling.Node{}
 	err = r.Scan(&node.ID, &node.LastCrawled)
@@ -157,6 +161,7 @@ func (d *SQLDatastore) AddItemsForNode(owner string, items []crawling.Item) erro
 	if err != nil {
 		return err
 	}
+	defer s.Close()
 
 	_, err = s.Exec(owner)
 	if err != nil {
@@ -168,6 +173,7 @@ func (d *SQLDatastore) AddItemsForNode(owner string, items []crawling.Item) erro
 		if err != nil {
 			return err
 		}
+		defer s.Close()
 
 		_, err = s.Exec(
 			owner,

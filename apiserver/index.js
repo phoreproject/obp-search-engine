@@ -16,7 +16,7 @@ app.get("/logo.png", (req, res) => {
 const config = require('./config')
 
 app.get("/", (req, res) => {
-    res.send()
+    res.send(config)
 })
 
 app.get('/search/listings', (req, res) => {
