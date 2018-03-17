@@ -55,21 +55,24 @@ func main() {
 			nodeID, err := c.CrawlOnce()
 
 			if err != nil {
-				panic(err)
+				done <- true
+				return
 			}
 
 			fmt.Printf("Crawling %s\n", nodeID)
 
 			items, err := c.RPCInterface.GetItems(nodeID)
 			if err != nil {
-				panic(err)
+				done <- true
+				return
 			}
 
 			fmt.Printf("Found %d items.\n", len(items))
 
 			err = c.DB.AddItemsForNode(nodeID, items)
 			if err != nil {
-				panic(err)
+				done <- true
+				return
 			}
 			done <- true
 		}()
