@@ -2,6 +2,7 @@ const express = require("express")
 const app = express()
 const Sequelize = require("sequelize")
 const path = require("path")
+const moment = require("moment")
 
 const sequelize = new Sequelize(process.env.DATABASE_URI || "mysql://" + process.env.RDS_USERNAME + ":" + process.env.RDS_PASSWORD + "@" + process.env.RDS_HOSTNAME + ":" + process.env.RDS_PORT + "/" + process.env.RDS_DB_NAME, {omitNull: true});
 
@@ -72,7 +73,14 @@ app.get('/search/listings', (req, res) => {
         }
     }
     options.where.title = query
-    options.include = [Node]
+    options.include = [{
+        model: Node,
+        where: {
+            lastUpdated: {
+                $gt: moment().subtract(1, "hour").toDate()
+            }
+        }
+    }]
     Item.findAndCountAll(options).then((out) => {
         const result = Object.assign(config, {
             results: {
