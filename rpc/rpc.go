@@ -132,3 +132,29 @@ func (r OpenBazaarRPC) GetProfile(id string) (*crawling.ProfileResponse, error) 
 	}
 	return &response, nil
 }
+
+// GetUserAgent gets the user agent of a specific node
+func (r OpenBazaarRPC) GetUserAgent(id string) (string, error) {
+	req, err := http.NewRequest("GET", "http://"+path.Join(r.URL, "ipns", id, "user_agent"), nil)
+	if err != nil {
+		return "", err
+	}
+	resp, err := r.client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	responseRaw := new(bytes.Buffer)
+	responseRaw.ReadFrom(resp.Body)
+
+	response := responseRaw.String()
+
+	if err := json.Unmarshal(responseRaw.Bytes(), &response); err != nil {
+		fmt.Println(err)
+		var possibleError ErrorResponse
+		if err := json.Unmarshal(responseRaw.Bytes(), &possibleError); err == nil {
+			return "", nil // fail silently
+		}
+		return "", err
+	}
+	return response, nil
+}

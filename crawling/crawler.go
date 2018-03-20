@@ -52,7 +52,7 @@ func (c Crawler) CrawlOnce() (string, error) {
 			fmt.Println(err)
 		}
 	} else {
-		fmt.Println("saving uninitialized...")
+		fmt.Println("saving empty...")
 
 		if err := c.DB.SaveNodeUninitialized(*nextNode); err != nil {
 			fmt.Println(err)

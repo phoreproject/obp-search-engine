@@ -61,6 +61,13 @@ func main() {
 
 			fmt.Printf("Crawling %s\n", nodeID)
 
+			_, err = c.RPCInterface.GetUserAgent(nodeID)
+			if err != nil {
+				done <- true
+				fmt.Printf("Could not access node %s. ignoring\n", nodeID)
+				return
+			}
+
 			items, err := c.RPCInterface.GetItems(nodeID)
 			if err != nil {
 				done <- true
