@@ -3,6 +3,7 @@ package rpc
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"path"
@@ -144,17 +145,15 @@ func (r OpenBazaarRPC) GetUserAgent(id string) (string, error) {
 		return "", err
 	}
 	responseRaw := new(bytes.Buffer)
-	responseRaw.ReadFrom(resp.Body)
-
-	response := responseRaw.String()
-
-	if err := json.Unmarshal(responseRaw.Bytes(), &response); err != nil {
-		fmt.Println(err)
-		var possibleError ErrorResponse
-		if err := json.Unmarshal(responseRaw.Bytes(), &possibleError); err == nil {
-			return "", nil // fail silently
-		}
+	_, err = responseRaw.ReadFrom(resp.Body)
+	if err != nil {
 		return "", err
 	}
-	return response, nil
+
+	var possibleError ErrorResponse
+	if err := json.Unmarshal(responseRaw.Bytes(), &possibleError); err == nil {
+		return "", errors.New(possibleError.Reason)
+	}
+
+	return responseRaw.String(), nil
 }
