@@ -99,7 +99,7 @@ type ModeratorPrice struct {
 type ModeratorFee struct {
 	FixedFee   *ModeratorPrice `protobuf:"bytes,1,opt,name=fixedFee" json:"fixedFee,omitempty"`
 	Percentage float32         `protobuf:"fixed32,2,opt,name=percentage" json:"percentage,omitempty"`
-	FeeType    int32           `protobuf:"varint,3,opt,name=feeType,enum=Moderator_Fee_FeeType" json:"feeType,omitempty"`
+	FeeType    interface{}     `json:"feeType,omitempty"`
 }
 
 type Moderator struct {
