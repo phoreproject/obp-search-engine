@@ -50,7 +50,6 @@ func main() {
 
 	for {
 		done := make(chan bool)
-		timeout := make(chan bool)
 		go func() {
 			nodeID, err := c.CrawlOnce()
 
@@ -82,10 +81,6 @@ func main() {
 				return
 			}
 			done <- true
-		}()
-		go func() {
-			time.Sleep(time.Second * 10)
-			timeout <- true
 		}()
 		select {
 		case <-done:
