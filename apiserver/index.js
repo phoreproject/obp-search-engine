@@ -39,7 +39,7 @@ app.get('/search/listings', (req, res) => {
                 4: 4,
                 3: 3,
                 2: 2,
-                1: 1
+                1: 0
             }[Number(req.query.rating)]
         }
     }
