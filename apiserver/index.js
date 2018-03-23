@@ -34,7 +34,7 @@ app.get('/search/listings', (req, res) => {
 
     if (req.query.rating) {
         options.where.rating = {
-            $gt: {
+            $gte: {
                 5: 4.75,
                 4: 4,
                 3: 3,
