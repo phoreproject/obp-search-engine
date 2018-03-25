@@ -77,8 +77,10 @@ app.get('/search/listings', (req, res) => {
         model: Node,
         where: {
             lastUpdated: {
-                $gt: moment().subtract(1, "hour").toDate()
-            }
+                $gt: moment(new Date()).subtract(8, 'hours').toDate()
+            },
+            listed: true,
+            banned: false
         }
     }]
     Item.findAndCountAll(options).then((out) => {

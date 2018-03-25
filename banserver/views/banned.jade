@@ -1,0 +1,30 @@
+extends index.jade
+
+block nav
+  li
+    a(href='/unlisted') Unlisted
+  li.active
+    a(href='/banned')
+      | Banned
+      span.sr-only (current)
+
+block content
+  if nodes && nodes.length > 0
+    table.table.table-bordered.table-striped.main-table
+      thead
+        th ID
+        th Name
+        th Short Description
+        th Actions
+      tbody
+          each node in nodes
+            tr
+              td
+                a(href="pm://#{node.id}") #{node.id}
+              td #{node.name}
+              td #{node.shortDescription}
+              td
+                button.btn.btn-success(type="button", onclick='window.location = "/unban/#{node.id}"') Unban
+  else
+    p 
+      b None banned
