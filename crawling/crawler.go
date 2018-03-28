@@ -40,10 +40,8 @@ func (c Crawler) CrawlOnce() (string, error) {
 	}
 
 	profile, err := c.RPCInterface.GetProfile(nextNode.ID)
-	if err != nil {
-		return "", err
-	}
-	if profile.Stats != nil {
+
+	if profile != nil && profile.Stats != nil {
 		nextNode.Profile = profile
 
 		fmt.Println("saving...")
