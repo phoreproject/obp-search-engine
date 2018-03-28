@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"time"
+	"log"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/phoreproject/obp-search-engine/crawling"
@@ -34,7 +35,7 @@ func main() {
 
 	config, err := r.GetConfig()
 	if err != nil {
-		panic(err)
+		log.Fatal("You need to run openbazaard. Please check: https://github.com/phoreproject/openbazaar-go")
 	}
 
 	profile, err := r.GetProfile(config.PeerID)
