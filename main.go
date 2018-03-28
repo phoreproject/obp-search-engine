@@ -35,7 +35,8 @@ func main() {
 
 	config, err := r.GetConfig()
 	if err != nil {
-		log.Fatal("You need to run openbazaard. Please check: https://github.com/phoreproject/openbazaar-go")
+		log.Printf("You need to run openbazaard. Please check: https://github.com/phoreproject/openbazaar-go")
+		panic(err)
 	}
 
 	profile, err := r.GetProfile(config.PeerID)
