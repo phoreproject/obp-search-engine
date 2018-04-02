@@ -126,12 +126,10 @@ app.get('/unban/:id', (req, res) => {
 db
   .sequelize
   .sync()
-  .complete(function(err) {
-    if (err) {
-      throw err
-    } else {
-      http.createServer(app).listen(app.get('port'), function(){
-        console.log('Express server listening on port ' + app.get('port'))
-      })
-    }
+  .then(function() {
+    http.createServer(app).listen(app.get('port'), function(){
+      console.log('Express server listening on port ' + app.get('port'))
+    })
+  }, function(err){
+    throw(err)
   })
