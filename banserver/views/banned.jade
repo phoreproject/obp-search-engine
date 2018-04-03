@@ -13,6 +13,7 @@ block content
     table.table.table-bordered.table-striped.main-table
       thead
         th ID
+        th # Listings
         th Name
         th Short Description
         th Actions
@@ -21,6 +22,7 @@ block content
             tr
               td
                 a(href="pm://#{node.id}") #{node.id}
+              td #{node.listingCount}
               td #{node.name}
               td #{node.shortDescription}
               td
