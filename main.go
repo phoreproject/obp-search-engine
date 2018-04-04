@@ -4,8 +4,10 @@ import (
 	"database/sql"
 	"flag"
 	"fmt"
-	"time"
 	"log"
+	"time"
+
+	"github.com/spf13/viper"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/phoreproject/obp-search-engine/crawling"
@@ -13,9 +15,23 @@ import (
 	"github.com/phoreproject/obp-search-engine/rpc"
 )
 
-func main() {
+func initConfig() {
+	viper.SetConfigName("config")
+	viper.WatchConfig()
+	viper.SetDefault("DB_USER", "root")
+	viper.SetDefault("DB_PASSWORD", "")
+	viper.AddConfigPath(".")
+	err := viper.ReadInConfig() // Find and read the config file
+	if err != nil {             // Handle errors reading the config file
+		panic(fmt.Errorf("Fatal error config file: %s ", err))
+	}
+}
 
-	databaseURL := flag.String("mysql", "root@tcp(127.0.0.1:3306)/obpsearch", "database url used to connect to MySQL database")
+func main() {
+	initConfig()
+	dbPassword := viper.GetString("DB_PASSWORD")
+	dbUser := viper.GetString("DB_USER")
+	databaseURL := flag.String("mysql", dbUser+":"+dbPassword+"@tcp(127.0.0.1:3306)/obpsearch", "database url used to connect to MySQL database")
 	rpcURL := flag.String("rpc", "127.0.0.1:5002", "rpc url used to connect to Phore Marketplace")
 	flag.Parse()
 
