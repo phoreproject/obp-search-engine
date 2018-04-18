@@ -4,7 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log"
 	"strings"
+
+	"github.com/jbrukh/bayesian"
 
 	"github.com/phoreproject/obp-search-engine/crawling"
 )
@@ -20,7 +23,12 @@ func NewSQLDatastore(db *sql.DB) (*SQLDatastore, error) {
 	if err != nil {
 		return nil, err
 	}
-	_, err = db.Exec("CREATE TABLE IF NOT EXISTS items (owner VARCHAR(50), hash VARCHAR(50) NOT NULL, slug VARCHAR(70), title VARCHAR(140), tags VARCHAR(410), description TEXT, thumbnail VARCHAR(160), language VARCHAR(20), priceAmount BIGINT, priceCurrency VARCHAR(10), categories VARCHAR(410), nsfw TINYINT(1), contractType VARCHAR(20), rating DECIMAL(3, 2), PRIMARY KEY (hash))")
+	_, err = db.Exec("CREATE TABLE IF NOT EXISTS items (owner VARCHAR(50), hash VARCHAR(50) NOT NULL, slug VARCHAR(70),title VARCHAR(140), tags VARCHAR(410), description TEXT, thumbnail VARCHAR(160), language VARCHAR(20), priceAmount BIGINT, priceCurrency VARCHAR(10), categories VARCHAR(410), nsfw TINYINT(1), goodProb FLOAT, badProb FLOAT, contractType VARCHAR(20), rating DECIMAL(3, 2), PRIMARY KEY (hash))")
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = db.Exec("CREATE TABLE IF NOT EXISTS spam_words (word VARCHAR(50), goodCount INT DEFAULT 0, badCount INT DEFAULT 0, PRIMARY KEY (word))")
 	if err != nil {
 		return nil, err
 	}
@@ -150,7 +158,7 @@ func (d *SQLDatastore) GetNode(nodeID string) (*crawling.Node, error) {
 }
 
 // AddItemsForNode updates a node with the following items
-func (d *SQLDatastore) AddItemsForNode(owner string, items []crawling.Item) error {
+func (d *SQLDatastore) AddItemsForNode(owner string, items []crawling.Item, classifier *bayesian.Classifier) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	tx, err := d.db.BeginTx(ctx, nil)
@@ -169,7 +177,14 @@ func (d *SQLDatastore) AddItemsForNode(owner string, items []crawling.Item) erro
 	}
 
 	for i := range items {
-		s, err = tx.Prepare("INSERT INTO items (owner, hash, slug, title, tags, description, thumbnail, language, priceAmount, priceCurrency, categories, nsfw, contractType, rating) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE slug=?, title=?, tags=?, description=?, thumbnail=?, language=?, priceAmount=?, priceCurrency=?, categories=?, nsfw=?, contractType=?, rating=?")
+		log.Printf("%+v\n", items[i])
+		// Title
+		scores, _, _ := classifier.ProbScores(
+			strings.Split(items[i].Title, " "),
+		)
+
+		// Description
+		s, err = tx.Prepare("INSERT INTO items (owner, hash, slug, title, tags, description, thumbnail, language, priceAmount, priceCurrency, categories, nsfw, contractType, rating, goodProb, badProb) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE slug=?, title=?, tags=?, description=?, thumbnail=?, language=?, priceAmount=?, priceCurrency=?, categories=?, nsfw=?, contractType=?, rating=?, goodProb=?, badProb=?")
 		if err != nil {
 			return err
 		}
@@ -202,6 +217,8 @@ func (d *SQLDatastore) AddItemsForNode(owner string, items []crawling.Item) erro
 			items[i].NSFW,
 			items[i].ContractType,
 			items[i].AverageRating,
+			scores[0],
+			scores[1],
 		)
 		if err != nil {
 			return err

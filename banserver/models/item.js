@@ -10,7 +10,7 @@ module.exports = function(sequelize, DataTypes){
         slug: DataTypes.STRING(70),
         title: DataTypes.STRING(140),
         tags: DataTypes.STRING(410),
-        description: DataTypes.STRING(50000),
+        description: DataTypes.TEXT,
         thumbnail: DataTypes.STRING(160),
         language: DataTypes.STRING(20),
         priceAmount: DataTypes.BIGINT,
@@ -18,7 +18,9 @@ module.exports = function(sequelize, DataTypes){
         categories: DataTypes.STRING(410),
         nsfw: DataTypes.BOOLEAN,
         contractType: DataTypes.STRING(20),
-        rating: DataTypes.DECIMAL(3, 2)
+        rating: DataTypes.DECIMAL(3, 2),
+        goodProb: DataTypes.DECIMAL(3, 2),
+        badProb: DataTypes.DECIMAL(3, 2),
     }, {
         freezeTableName: true,
         timestamps: false

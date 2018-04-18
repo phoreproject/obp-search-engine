@@ -13,6 +13,7 @@ import (
 	"github.com/phoreproject/obp-search-engine/crawling"
 	"github.com/phoreproject/obp-search-engine/db"
 	"github.com/phoreproject/obp-search-engine/rpc"
+	"github.com/phoreproject/obp-search-engine/spamFiltering"
 )
 
 func initConfig() {
@@ -40,14 +41,14 @@ func main() {
 		panic(err)
 	}
 
-	d, err := db.NewSQLDatastore(database)
+	db, err := db.NewSQLDatastore(database)
 	if err != nil {
 		panic(err)
 	}
 
 	r := rpc.NewRPC(*rpcURL)
 
-	c := &crawling.Crawler{RPCInterface: r, DB: d}
+	c := &crawling.Crawler{RPCInterface: r, DB: db}
 
 	config, err := r.GetConfig()
 	if err != nil {
@@ -65,6 +66,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	classifier := spamFiltering.Train()
 
 	for {
 		done := make(chan bool)
@@ -93,7 +96,7 @@ func main() {
 
 			fmt.Printf("Found %d items.\n", len(items))
 
-			err = c.DB.AddItemsForNode(nodeID, items)
+			err = c.DB.AddItemsForNode(nodeID, items, classifier)
 			if err != nil {
 				done <- true
 				return

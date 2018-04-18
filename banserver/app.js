@@ -61,6 +61,12 @@ app.get('/', handleUnlisted);
 
 app.get('/unlisted', handleUnlisted);
 
+app.get('/items', (req, res) => {
+  db.items.findAll().then((items) => {
+    res.render('items', {items: items.map((i) => i.toJSON())})
+  })
+});
+
 app.get('/banned', (req, res) => {
   db.nodes.findAll({
     where: {

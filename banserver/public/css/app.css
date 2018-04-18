@@ -16,3 +16,11 @@ body {
 .main-form input[type=text] {
   width: 500px;
 }
+
+h1 {
+  text-align: center
+}
+
+.phore-color {
+  color:#09c974;
+}

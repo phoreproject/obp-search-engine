@@ -2,6 +2,8 @@ package crawling
 
 import (
 	"time"
+
+	"github.com/jbrukh/bayesian"
 )
 
 // Datastore represents a way of storing crawled data.
@@ -10,7 +12,7 @@ type Datastore interface {
 	SaveNode(Node) error
 	AddUninitializedNodes([]Node) error
 	GetNode(string) (*Node, error)
-	AddItemsForNode(owner string, items []Item) error
+	AddItemsForNode(owner string, items []Item, classifier *bayesian.Classifier) error
 	SaveNodeUninitialized(Node) error
 }
 
