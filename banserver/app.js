@@ -15,18 +15,24 @@ const cookieParser = require('cookie-parser')
 app.set('port', process.env.PORT || 8000)
 app.set('views', __dirname + '/views')
 app.set('view engine', 'jade')
-app.use(express.favicon())
-app.use(express.logger('dev'))
+
+// Middlewares
+var favicon = require('serve-favicon')
+var morgan = require('morgan')
+var methodOverride = require('method-override')
+app.use(favicon(path.join(__dirname, 'public', 'images', 'Phore_16_x_16.png')))
+app.use(morgan('combined'))
 app.use(express.json())
 app.use(express.urlencoded())
-app.use(express.methodOverride())
+app.use(methodOverride())
 app.use(express.static(path.join(__dirname, 'public')))
 app.use(cookieParser())
 app.use(csrfProtection)
 
 // development only
 if ('development' === app.get('env')) {
-  app.use(express.errorHandler())
+  var errorHandler = require('errorhandler')
+  app.use(errorHandler())
 }
 
 function handleUnlisted(req, res)  {
@@ -132,12 +138,10 @@ app.get('/unban/:id', (req, res) => {
 db
   .sequelize
   .sync()
-  .complete(function(err) {
-    if (err) {
-      throw err
-    } else {
-      http.createServer(app).listen(app.get('port'), function(){
-        console.log('Express server listening on port ' + app.get('port'))
-      })
-    }
+  .then(function() {
+    http.createServer(app).listen(app.get('port'), function(){
+      console.log('Express server listening on port ' + app.get('port'))
+    })
+  }, function(err){
+    throw(err)
   })
