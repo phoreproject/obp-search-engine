@@ -3,7 +3,6 @@ package db
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"log"
 	"strings"
 
@@ -125,7 +124,7 @@ func (d *SQLDatastore) AddUninitializedNodes(nodes []crawling.Node) error {
 		return err
 	}
 	for n := range nodes {
-		fmt.Printf("Added %s\n", nodes[n].ID)
+		// fmt.Printf("Added %s\n", nodes[n].ID)
 		insertStatement, err := d.db.Prepare("INSERT IGNORE INTO nodes (id, lastUpdated) VALUES (?, '2000-01-01 00:00:00')")
 		if err != nil {
 			return err
@@ -177,15 +176,15 @@ func (d *SQLDatastore) AddItemsForNode(owner string, items []crawling.Item, clas
 	}
 
 	for i := range items {
-		log.Printf("%+v\n", items[i])
 		// Title
 		scores, _, _ := classifier.ProbScores(
 			strings.Split(items[i].Title, " "),
 		)
 
 		// Description
-		s, err = tx.Prepare("INSERT INTO items (owner, hash, slug, title, tags, description, thumbnail, language, priceAmount, priceCurrency, categories, nsfw, contractType, rating, goodProb, badProb) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE slug=?, title=?, tags=?, description=?, thumbnail=?, language=?, priceAmount=?, priceCurrency=?, categories=?, nsfw=?, contractType=?, rating=?, goodProb=?, badProb=?")
+		s, err = tx.Prepare("INSERT INTO items (owner, hash, slug, title, tags, description, thumbnail, language, priceAmount, priceCurrency, categories, nsfw, contractType, rating, goodProb, badProb) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE slug=?, title=?, tags=?, description=?, thumbnail=?, language=?, priceAmount=?, priceCurrency=?, categories=?, nsfw=?, contractType=?, rating=?, goodProb=?, badProb=?")
 		if err != nil {
+			log.Printf("%+v\n", err)
 			return err
 		}
 		defer s.Close()
@@ -195,7 +194,7 @@ func (d *SQLDatastore) AddItemsForNode(owner string, items []crawling.Item, clas
 			items[i].Hash,
 			items[i].Slug,
 			items[i].Title,
-			"",
+			"", // tags
 			items[i].Description,
 			items[i].Thumbnail.Tiny+","+items[i].Thumbnail.Small+","+items[i].Thumbnail.Medium,
 			items[i].Language,
@@ -205,6 +204,8 @@ func (d *SQLDatastore) AddItemsForNode(owner string, items []crawling.Item, clas
 			items[i].NSFW,
 			items[i].ContractType,
 			items[i].AverageRating,
+			scores[0],
+			scores[1],
 			items[i].Slug,
 			items[i].Title,
 			"",
@@ -221,6 +222,7 @@ func (d *SQLDatastore) AddItemsForNode(owner string, items []crawling.Item, clas
 			scores[1],
 		)
 		if err != nil {
+			log.Printf("%+v\n", err)
 			return err
 		}
 	}

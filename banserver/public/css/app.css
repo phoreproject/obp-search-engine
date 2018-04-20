@@ -17,6 +17,14 @@ body {
   width: 500px;
 }
 
+.container {
+  margin-top:1em;
+}
+
+.navbar-nav {
+  margin:auto;
+}
+
 h1 {
   text-align: center
 }

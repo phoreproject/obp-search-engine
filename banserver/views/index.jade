@@ -10,27 +10,15 @@ html(lang='en', ng-app='banserver')
     link(href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css", integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm", rel="stylesheet", crossorigin="anonymous")
   body
     h1.phore-color Phore Search Manager
-    nav.navbar.navbar-inverse.navbar-fixed-top(role='navigation')
-      .container
-        .navbar-header
-          button.navbar-toggle(type='button', data-toggle='collapse', data-target='.navbar-ex1-collapse')
-            span.sr-only Toggle navigation
-            span.icon-bar
-            span.icon-bar
-            span.icon-bar
-          a.navbar-brand(href='#') Ban Manager
-        // Collect the nav links, forms, and other content for toggling
-        #bs-example-navbar-collapse-1.collapse.navbar-collapse
-          ul.nav.navbar-nav
-            block nav
-              li.active
-                a(href='/')
-                  | Unlisted 
-                  span.sr-only (current)
-              li
-                a(href='#') Banned
-        // /.navbar-collapse
-      // /.container
+    nav.navbar.navbar-expand-lg.navbar-light.bg-light
+      .collapse.navbar-collapse
+        ul.navbar-nav
+          li.nav-item
+            a.nav-link(href="/items") Listings
+          li.nav-item
+            a.nav-link(href="/unlisted") Unlisted Stores
+          li.nav-item
+            a.nav-link(href="/banned") Banned Stores
     .container(ng-view='')
       block content
         | test
