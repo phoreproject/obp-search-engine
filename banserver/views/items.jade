@@ -9,6 +9,7 @@ block nav
       span.sr-only (current)
 
 block content
+  h2 Individual listings
   if items && items.length > 0
     table.table.table-bordered.table-striped.main-table
       thead
@@ -18,13 +19,15 @@ block content
         th Actions
       tbody
           each item in items
-            tr
+            tr(class=item.badProb > 0.65 ? "spam-marked" : "")
               td
-                a(href="pm://#{item.hash}") #{item.hash}
-              td #{item.owner}
+                a(href="pm://#{item.owner}/store/#{item.slug}") #{item.slug}
+              td
+                a(href="pm://#{item.owner}") #{item.owner.substr(0,15)}...
               td #{item.goodProb} / #{item.badProb}
               td
-                button.btn.btn-success(type="button", onclick='window.location = "/unban/#{item.id}"') Unban
+                button.btn.btn-primary(type="button", onclick='window.location = "/list/#{item.id}"') List
+                button.btn.btn-danger(type="button", onclick='window.location = "/ban/#{item.id}"') Ban
   else
     p 
       b None banned

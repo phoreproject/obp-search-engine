@@ -25,6 +25,15 @@ body {
   margin:auto;
 }
 
+table.table tbody tr.spam-marked {
+  background: #ed4656;
+  color:white;
+}
+
+table.table tbody tr.spam-marked a {
+  color:white;
+};
+
 h1 {
   text-align: center
 }
