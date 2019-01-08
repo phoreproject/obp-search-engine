@@ -9,6 +9,9 @@ import (
 	"github.com/phoreproject/obp-search-engine/crawling"
 )
 
+// start mysql container
+// docker run -p 3306:3306 --name mysqlTest -e MYSQL_ROOT_PASSWORD=secret -e MYSQL_ROOT_HOST=% -e MYSQL_DATABASE=obpsearch -d mysql/mysql-server
+
 // SQLDatastore represents a datastore for the crawler implemented using Redis
 type SQLDatastore struct {
 	db *sql.DB
@@ -27,8 +30,8 @@ func NewSQLDatastore(db *sql.DB) (*SQLDatastore, error) {
 	_, err = db.Exec("CREATE TABLE IF NOT EXISTS items (owner VARCHAR(50), score TINYINT, hash VARCHAR(50) NOT NULL," +
 		" slug VARCHAR(70), title VARCHAR(140), tags VARCHAR(410), categories VARCHAR(410), contractType VARCHAR(20)," +
 		" description TEXT, thumbnail VARCHAR(260), language VARCHAR(20), priceAmount BIGINT, priceCurrency VARCHAR(10)," +
-		" priceModifier INT, nsfw TINYINT(1), averageRating INT, ratingCount INT, coinType VARCHAR(20), coinDivisibility INT" +
-		" normalizedPrice DECIMAL(20, 40), PRIMARY KEY (hash))")
+		" priceModifier INT, nsfw TINYINT(1), averageRating INT, ratingCount INT, coinType VARCHAR(20), coinDivisibility INT," +
+		" normalizedPrice DECIMAL(40, 20), PRIMARY KEY (hash))")
 	if err != nil {
 		return nil, err
 	}
