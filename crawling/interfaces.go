@@ -26,31 +26,40 @@ type Node struct {
 type Price struct {
 	CurrencyCode string `json:"currencyCode"`
 	Amount       uint64 `json:"amount"`
+	Modifier     uint64 `json:"modifier"`
 }
 
 // Thumbnail represents different the addresses for different sizes of thumbnails
 type Thumbnail struct {
-	Tiny   string `json:"tiny"`
-	Small  string `json:"small"`
-	Medium string `json:"medium"`
+	Tiny     string `json:"tiny"`
+	Small    string `json:"small"`
+	Medium   string `json:"medium"`
+	Original string `json:"original"`
+	Large    string `json:"large"`
 }
 
 // Item represents a single listing in Phore Marketplace
 type Item struct {
-	Hash          string    `json:"hash"`
-	Slug          string    `json:"slug"`
-	Title         string    `json:"title"`
-	Categories    []string  `json:"categories"`
-	NSFW          bool      `json:"nsfw"`
-	ContractType  string    `json:"contractType"`
-	Description   string    `json:"description"`
-	Thumbnail     Thumbnail `json:"thumbnail"`
-	Price         Price     `json:"price"`
-	ShipsTo       []string  `json:"shipsTo"`
-	FreeShipping  []string  `json:"freeShipping"`
-	Language      string    `json:"language"`
-	AverageRating float32   `json:"averageRating"`
-	RatingCount   uint32    `json:"ratingCount"`
+	Score              uint32    `json:"score"`
+	Hash               string    `json:"hash"`
+	Slug               string    `json:"slug"`
+	Title              string    `json:"title"`
+	Tags               []string  `json:"tags"`
+	Categories         []string  `json:"categories"`
+	ContractType       string    `json:"contractType"`
+	Description        string    `json:"description"`
+	Thumbnail          Thumbnail `json:"thumbnail"`
+	Language           string    `json:"language"`
+	Price              Price     `json:"price"`
+	NSFW               bool      `json:"nsfw"`
+	AverageRating      float32   `json:"averageRating"`
+	RatingCount        uint32    `json:"ratingCount"`
+	ShipsTo            []string  `json:"shipsTo"`
+	FreeShipping       []string  `json:"freeShipping"`
+	AcceptedCurrencies []string  `json:"acceptedCurrencies"`
+	CoinType           string    `json:"coinType"`
+    CoinDivisibility   uint32    `json:"coinDivisibility"`
+    NormalizedPrice    float64   `json:"normalizedPrice"`
 }
 
 type ProfileSocialAccount struct {
