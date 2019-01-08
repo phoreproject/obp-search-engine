@@ -97,7 +97,14 @@ func (r OpenBazaarRPC) GetItems(id string) ([]crawling.Item, error) {
 		return nil, err
 	}
 	responseRaw := new(bytes.Buffer)
-	responseRaw.ReadFrom(resp.Body)
+	byteCount, err := responseRaw.ReadFrom(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if byteCount == 0 {
+		return nil, nil // fail silently
+	}
+
 	var response []crawling.Item
 	if err := json.Unmarshal(responseRaw.Bytes(), &response); err != nil {
 		var possibleError ErrorResponse
@@ -120,9 +127,16 @@ func (r OpenBazaarRPC) GetProfile(id string) (*crawling.ProfileResponse, error) 
 		return nil, err
 	}
 	responseRaw := new(bytes.Buffer)
-	responseRaw.ReadFrom(resp.Body)
+	byteCount, err := responseRaw.ReadFrom(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if byteCount == 0 {
+		return nil, nil // fail silently
+	}
+
 	var response crawling.ProfileResponse
-	err = json.Unmarshal(responseRaw.Bytes(), &response)
+	//err = json.Unmarshal(responseRaw.Bytes(), &response) TODO - why duplicated?
 	if err := json.Unmarshal(responseRaw.Bytes(), &response); err != nil {
 		fmt.Println(err)
 		var possibleError ErrorResponse
