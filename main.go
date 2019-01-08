@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"flag"
 	"fmt"
-	"time"
 	"log"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/phoreproject/obp-search-engine/crawling"

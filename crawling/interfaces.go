@@ -1,7 +1,6 @@
 package crawling
 
 import (
-	"github.com/golang/protobuf/ptypes/timestamp"
 	"time"
 )
 
@@ -138,7 +137,7 @@ type ProfileResponse struct {
 	HeaderHashes     *ProfileImage        `protobuf:"bytes,14,opt,name=headerHashes,proto3" json:"headerHashes,omitempty"`
 	Stats            *ProfileStats        `protobuf:"bytes,15,opt,name=stats,proto3" json:"stats,omitempty"`
 	BitcoinPubkey    string               `protobuf:"bytes,16,opt,name=bitcoinPubkey,proto3" json:"bitcoinPubkey,omitempty"`
-	LastModified     *timestamp.Timestamp `protobuf:"bytes,17,opt,name=lastModified,proto3" json:"lastModified,omitempty"`
+	LastModified     string               `protobuf:"bytes,17,opt,name=lastModified,proto3" json:"lastModified,omitempty"` //in marketplace it is *timestamp.Timestamp from protocol buffer, but it is problematic in parsing to json.
 	Currencies       []string             `protobuf:"bytes,18,rep,name=currencies,proto3" json:"currencies,omitempty"`
 }
 

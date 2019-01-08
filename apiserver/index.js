@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 const express = require('express');
 const app = express();
@@ -157,7 +157,7 @@ app.get('/search/listings', (req, res) => {
                     price: {
                         amount: r.priceAmount,
                         currencyCode: r.priceCurrency,
-                        modifier: r.modifier
+                        modifier: r.priceModifier
                     },
                     nsfw: r.nsfw,
                     averageRating: r.averageRating,

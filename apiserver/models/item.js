@@ -20,7 +20,7 @@ module.exports = function(sequelize, DataTypes){
         //price
         priceAmount: DataTypes.BIGINT,
         priceCurrency: DataTypes.STRING(10),
-        modifier: DataTypes.INTEGER,
+        priceModifier: DataTypes.INTEGER,
 
         nsfw: DataTypes.BOOLEAN,
         averageRating: DataTypes.INTEGER,
