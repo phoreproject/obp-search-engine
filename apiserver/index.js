@@ -150,8 +150,8 @@ app.get('/search/listings', (req, res) => {
                         tiny: thumbnails[0],
                         small: thumbnails[1],
                         medium: thumbnails[2],
-                        original: thumbnails.length > 3 ? thumbnails[3] : '',
-                        large: thumbnails.length > 4 ? thumbnails[4] : ''
+                        original: thumbnails[3],
+                        large: thumbnails[4]
                     },
                     language: r.language,
                     price: {
