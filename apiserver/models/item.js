@@ -29,8 +29,6 @@ module.exports = function(sequelize, DataTypes){
         coinType: DataTypes.STRING(20),
         coinDivisibility: DataTypes.INTEGER,
         normalizedPrice: DataTypes.DOUBLE,
-
-        rating: DataTypes.DECIMAL(3, 2) // maybe it is average rating
     }, {
         freezeTableName: true,
         timestamps: false
