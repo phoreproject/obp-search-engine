@@ -132,14 +132,17 @@ func (d *SQLDatastore) AddUninitializedNodes(nodes []crawling.Node) error {
 		return err
 	}
 	for n := range nodes {
-		fmt.Printf("Added %s\n", nodes[n].ID)
-		insertStatement, err := d.db.Prepare("INSERT IGNORE INTO nodes (id, lastUpdated) VALUES (?, '2000-01-01 00:00:00')")
-		if err != nil {
-			return err
-		}
-		defer insertStatement.Close()
+		err = func() error {
+			fmt.Printf("Added %s\n", nodes[n].ID)
+			insertStatement, err := d.db.Prepare("INSERT IGNORE INTO nodes (id, lastUpdated) VALUES (?, '2000-01-01 00:00:00')")
+			if err != nil {
+				return err
+			}
+			defer insertStatement.Close()
 
-		_, err = tx.Stmt(insertStatement).Exec(nodes[n].ID)
+			_, err = tx.Stmt(insertStatement).Exec(nodes[n].ID)
+			return err
+		}()
 		if err != nil {
 			return err
 		}
@@ -184,62 +187,66 @@ func (d *SQLDatastore) AddItemsForNode(owner string, items []crawling.Item) erro
 	}
 
 	for i := range items {
-		s, err = tx.Prepare("INSERT INTO items (owner, hash, score, slug, title, tags, categories, contractType, " +
-			"description, thumbnail, language, priceAmount, priceCurrency, priceModifier, nsfw, averageRating, ratingCount, " +
-			"coinType, coinDivisibility, normalizedPrice) " +
-			"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE " +
-			"score=?, slug=?, title=?, tags=?, categories=?, contractType=?, description=?, thumbnail=?, language=?, " +
-			"priceAmount=?, priceCurrency=?, priceModifier=?, nsfw=?, averageRating=?, ratingCount=?, coinType=?," +
-			"coinDivisibility=?, normalizedPrice=?")
-		if err != nil {
+		err = func() error {
+			s, err = tx.Prepare("INSERT INTO items (owner, hash, score, slug, title, tags, categories, contractType, " +
+				"description, thumbnail, language, priceAmount, priceCurrency, priceModifier, nsfw, averageRating, ratingCount, " +
+				"coinType, coinDivisibility, normalizedPrice) " +
+				"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE " +
+				"score=?, slug=?, title=?, tags=?, categories=?, contractType=?, description=?, thumbnail=?, language=?, " +
+				"priceAmount=?, priceCurrency=?, priceModifier=?, nsfw=?, averageRating=?, ratingCount=?, coinType=?," +
+				"coinDivisibility=?, normalizedPrice=?")
+			if err != nil {
+				return err
+			}
+
+			defer s.Close()
+
+			_, err = s.Exec(
+				owner,
+				items[i].Hash,
+
+				items[i].Score,
+				items[i].Slug,
+				items[i].Title,
+				strings.Join(items[i].Tags, ","),
+				strings.Join(items[i].Categories, ","),
+				items[i].ContractType,
+				items[i].Description,
+				items[i].Thumbnail.Tiny+","+items[i].Thumbnail.Small+","+items[i].Thumbnail.Medium+","+items[i].Thumbnail.Original+","+items[i].Thumbnail.Large,
+				items[i].Language,
+				items[i].Price.Amount,
+				items[i].Price.CurrencyCode,
+				items[i].Price.Modifier,
+				items[i].NSFW,
+				items[i].AverageRating,
+				items[i].RatingCount,
+				items[i].CoinType,
+				items[i].CoinDivisibility,
+				items[i].NormalizedPrice,
+
+				// on duplicate repeat
+				items[i].Score,
+				items[i].Slug,
+				items[i].Title,
+				strings.Join(items[i].Tags, ","),
+				strings.Join(items[i].Categories, ","),
+				items[i].ContractType,
+				items[i].Description,
+				items[i].Thumbnail.Tiny+","+items[i].Thumbnail.Small+","+items[i].Thumbnail.Medium+","+items[i].Thumbnail.Original+","+items[i].Thumbnail.Large,
+				items[i].Language,
+				items[i].Price.Amount,
+				items[i].Price.CurrencyCode,
+				items[i].Price.Modifier,
+				items[i].NSFW,
+				items[i].AverageRating,
+				items[i].RatingCount,
+				items[i].CoinType,
+				items[i].CoinDivisibility,
+				items[i].NormalizedPrice,
+			)
 			return err
-		}
+		}()
 
-		defer s.Close()
-
-		_, err = s.Exec(
-			owner,
-			items[i].Hash,
-
-			items[i].Score,
-			items[i].Slug,
-			items[i].Title,
-			strings.Join(items[i].Tags, ","),
-			strings.Join(items[i].Categories, ","),
-			items[i].ContractType,
-			items[i].Description,
-			items[i].Thumbnail.Tiny+","+items[i].Thumbnail.Small+","+items[i].Thumbnail.Medium+","+items[i].Thumbnail.Original+","+items[i].Thumbnail.Large,
-			items[i].Language,
-			items[i].Price.Amount,
-			items[i].Price.CurrencyCode,
-			items[i].Price.Modifier,
-			items[i].NSFW,
-			items[i].AverageRating,
-			items[i].RatingCount,
-			items[i].CoinType,
-			items[i].CoinDivisibility,
-			items[i].NormalizedPrice,
-
-			// on duplicate repeat
-			items[i].Score,
-			items[i].Slug,
-			items[i].Title,
-			strings.Join(items[i].Tags, ","),
-			strings.Join(items[i].Categories, ","),
-			items[i].ContractType,
-			items[i].Description,
-			items[i].Thumbnail.Tiny+","+items[i].Thumbnail.Small+","+items[i].Thumbnail.Medium+","+items[i].Thumbnail.Original+","+items[i].Thumbnail.Large,
-			items[i].Language,
-			items[i].Price.Amount,
-			items[i].Price.CurrencyCode,
-			items[i].Price.Modifier,
-			items[i].NSFW,
-			items[i].AverageRating,
-			items[i].RatingCount,
-			items[i].CoinType,
-			items[i].CoinDivisibility,
-			items[i].NormalizedPrice,
-		)
 		if err != nil {
 			return err
 		}
