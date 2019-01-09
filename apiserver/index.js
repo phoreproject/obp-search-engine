@@ -103,6 +103,7 @@ app.get('/search/listings', (req, res) => {
                         data: {
                             userAgent: r.node.userAgent,
                             lastSeen: r.node.lastUpdated,
+                            blocked: r.node.blocked,
                             peerID: r.owner,
                             name: r.node.name,
                             handle: r.node.handle,
