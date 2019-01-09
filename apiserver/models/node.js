@@ -19,19 +19,19 @@ module.exports = function(sequelize, DataTypes){
         about: DataTypes.STRING(10000),
         shortDescription: DataTypes.STRING(160),
 
-        //avatar hashes
-        avatarTinyHash: DataTypes.BLOB,
-        avatarSmallHash: DataTypes.BLOB,
-        avatarMediumHash: DataTypes.BLOB,
-        avatarOriginalHash: DataTypes.BLOB,
-        avatarLargeHash: DataTypes.BLOB,
-
-        //header hashes
-        headerTinyHash: DataTypes.BLOB,
-        headerSmallHash: DataTypes.BLOB,
-        headerMediumHash: DataTypes.BLOB,
-        headerOriginalHash: DataTypes.BLOB,
-        headerLargeHash: DataTypes.BLOB,
+        // //avatar hashes
+        // avatarTinyHash: DataTypes.STRING(50),
+        // avatarSmallHash: DataTypes.STRING(50),
+        // avatarMediumHash: DataTypes.STRING(50),
+        // avatarOriginalHash: DataTypes.STRING(50),
+        // avatarLargeHash: DataTypes.STRING(50),
+        //
+        // //header hashes
+        // headerTinyHash: DataTypes.STRING(50),
+        // headerSmallHash: DataTypes.STRING(50),
+        // headerMediumHash: DataTypes.STRING(50),
+        // headerOriginalHash: DataTypes.STRING(50),
+        // headerLargeHash: DataTypes.STRING(50),
 
         //stats
         followerCount: DataTypes.INTEGER,
@@ -42,7 +42,6 @@ module.exports = function(sequelize, DataTypes){
         averageRating: DataTypes.DECIMAL(3, 2),
 
         listed: DataTypes.BOOLEAN,
-        banned: DataTypes.BOOLEAN
     }, {
         freezeTableName: true,
         timestamps: false

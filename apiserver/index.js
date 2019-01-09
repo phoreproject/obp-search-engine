@@ -115,20 +115,20 @@ app.get('/search/listings', (req, res) => {
                             verifiedModerator: r.node.verifiedModerator,
                             about: r.node.about,
                             shortDescription: r.node.shortDescription,
-                            avatarHashes: {
-                                tiny: r.node.avatarTinyHash,
-                                small: r.node.avatarSmallHash,
-                                medium: r.node.avatarMediumHash,
-                                original: r.node.avatarOriginalHash,
-                                large: r.node.avatarLargeHash
-                            },
-                            headerHashes: {
-                                tiny: r.node.headerTinyHash,
-                                small: r.node.headerSmallHash,
-                                medium: r.node.headerMediumHash,
-                                original: r.node.headerOriginalHash,
-                                large: r.node.headerLargeHash
-                            },
+                            // avatarHashes: { // TODO add this data to other table and fetch before items
+                            //     tiny: r.node.avatarTinyHash,
+                            //     small: r.node.avatarSmallHash,
+                            //     medium: r.node.avatarMediumHash,
+                            //     original: r.node.avatarOriginalHash,
+                            //     large: r.node.avatarLargeHash
+                            // },
+                            // headerHashes: {
+                            //     tiny: r.node.headerTinyHash,
+                            //     small: r.node.headerSmallHash,
+                            //     medium: r.node.headerMediumHash,
+                            //     original: r.node.headerOriginalHash,
+                            //     large: r.node.headerLargeHash
+                            // },
                             stats: {
                                 followerCount: r.node.followerCount,
                                 followingCount: r.node.followingCount,
