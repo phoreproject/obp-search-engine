@@ -17,6 +17,7 @@ type Datastore interface {
 // Node is a representation of a single node on the network.
 type Node struct {
 	ID          string
+	UserAgent   string
 	Connections []string
 	LastCrawled time.Time
 	Profile     *ProfileResponse

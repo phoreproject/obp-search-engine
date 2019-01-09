@@ -19,7 +19,7 @@ type SQLDatastore struct {
 
 // NewSQLDatastore creates a new datastore given MySQL connection info
 func NewSQLDatastore(db *sql.DB) (*SQLDatastore, error) {
-	_, err := db.Exec("CREATE TABLE IF NOT EXISTS nodes (id VARCHAR(50) NOT NULL, lastUpdated DATETIME, name VARCHAR(40), " +
+	_, err := db.Exec("CREATE TABLE IF NOT EXISTS nodes (userAgent VARCHAR(50), id VARCHAR(50) NOT NULL, lastUpdated DATETIME, name VARCHAR(40), " +
 		"handle VARCHAR(40), location VARCHAR(40), nsfw TINYINT(1), vendor TINYINT(1), moderator TINYINT(1), about VARCHAR(10000), " +
 		"shortDescription VARCHAR(160), followerCount INT, followingCount INT, listingCount INT, postCount INT, ratingCount INT, " +
 		"averageRating DECIMAL(3, 2), listed TINYINT(1) DEFAULT 0, banned TINYINT(1) DEFAULT 0, PRIMARY KEY (id))")
@@ -56,13 +56,13 @@ func (d *SQLDatastore) SaveNodeUninitialized(n crawling.Node) error {
 		return err
 	}
 
-	insertStatement, err := tx.Prepare("INSERT INTO nodes (id, lastUpdated) VALUES (?, NOW()) ON DUPLICATE KEY UPDATE lastUpdated=NOW()")
+	insertStatement, err := tx.Prepare("INSERT INTO nodes (id, lastUpdated, userAgent) VALUES (?, ?, NOW()) ON DUPLICATE KEY UPDATE lastUpdated=NOW(), userAgent=?")
 	if err != nil {
 		return err
 	}
 	defer insertStatement.Close()
 
-	_, err = tx.Stmt(insertStatement).Exec(n.ID)
+	_, err = tx.Stmt(insertStatement).Exec(n.ID, n.UserAgent)
 	if err != nil {
 		return err
 	}
@@ -77,9 +77,9 @@ func (d *SQLDatastore) SaveNode(n crawling.Node) error {
 		return err
 	}
 
-	insertStatement, err := tx.Prepare("INSERT INTO nodes (id, lastUpdated, name, handle, location, nsfw, vendor, " +
+	insertStatement, err := tx.Prepare("INSERT INTO nodes (id, lastUpdated, userAgent, name, handle, location, nsfw, vendor, " +
 		"moderator, about, shortDescription, followerCount, followingCount, listingCount, postCount, ratingCount, averageRating) " +
-		"VALUES (?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE lastUpdated=NOW(), name=?, " +
+		"VALUES (?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE lastUpdated=NOW(), userAgent=?, name=?, " +
 		"handle=?, location=?, nsfw=?, vendor=?, moderator=?, about=?, shortDescription=?, followerCount=?, followingCount=?, " +
 		"listingCount=?, postCount=?, ratingCount=?, averageRating=?")
 	if err != nil {
@@ -89,6 +89,7 @@ func (d *SQLDatastore) SaveNode(n crawling.Node) error {
 
 	_, err = tx.Stmt(insertStatement).Exec(
 		n.ID,
+		n.UserAgent,
 		n.Profile.Name,
 		n.Profile.Handle,
 		n.Profile.Location,
@@ -103,6 +104,9 @@ func (d *SQLDatastore) SaveNode(n crawling.Node) error {
 		n.Profile.Stats.PostCount,
 		n.Profile.Stats.RatingCount,
 		n.Profile.Stats.AverageRating,
+
+		// on duplicated
+		n.UserAgent,
 		n.Profile.Name,
 		n.Profile.Handle,
 		n.Profile.Location,

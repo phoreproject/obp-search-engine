@@ -21,7 +21,6 @@ func (c Crawler) CrawlOnce() (string, error) {
 	nextNode.LastCrawled = time.Now()
 
 	connections, err := c.RPCInterface.GetConnections(nextNode.ID)
-
 	if err != nil {
 		return "", err
 	}
@@ -32,12 +31,16 @@ func (c Crawler) CrawlOnce() (string, error) {
 			nodes = append(nodes, Node{ID: connections[i], Connections: []string{}, LastCrawled: time.Date(2017, 12, 13, 0, 0, 0, 0, time.Local)})
 		}
 	}
-
 	nextNode.Connections = connections
-
 	if err := c.DB.AddUninitializedNodes(nodes); err != nil {
 		return "", err
 	}
+
+	userAgent, err := c.RPCInterface.GetUserAgent(nextNode.ID)
+	if err != nil {
+		return "", err
+	}
+	nextNode.UserAgent = userAgent
 
 	profile, err := c.RPCInterface.GetProfile(nextNode.ID)
 

@@ -14,8 +14,8 @@ import (
 )
 
 func main() {
-
-	databaseURL := flag.String("mysql", "root@tcp(127.0.0.1:3306)/obpsearch", "database url used to connect to MySQL database")
+	// url format is user:password@protocol(address:port)/db_name
+	databaseURL := flag.String("mysql", "root:secret@tcp(127.0.0.1:3306)/obpsearch", "database url used to connect to MySQL database")
 	rpcURL := flag.String("rpc", "127.0.0.1:5002", "rpc url used to connect to Phore Marketplace")
 	flag.Parse()
 
@@ -44,8 +44,13 @@ func main() {
 		panic(err)
 	}
 
+	userAgent, err := c.RPCInterface.GetUserAgent(config.PeerID)
+	if err != nil {
+		panic(err)
+	}
+
 	// add ourselves
-	err = c.DB.SaveNodeUninitialized(crawling.Node{ID: config.PeerID, Connections: []string{}, Profile: profile})
+	err = c.DB.SaveNodeUninitialized(crawling.Node{ID: config.PeerID, UserAgent: userAgent, Connections: []string{}, Profile: profile})
 	if err != nil {
 		panic(err)
 	}
