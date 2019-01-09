@@ -76,8 +76,9 @@ func testDB() {
 	peerId := config.PeerID
 	connections, err := r.GetConnections(peerId)
 	profile, err := r.GetProfile(peerId)
+	userAgent, err := r.GetUserAgent(peerId)
 
-	node := crawling.Node{peerId, connections, time.Now(), profile}
+	node := crawling.Node{peerId, userAgent, connections, time.Now(), profile}
 	err = sqlDataStore.SaveNode(node)
 	if err != nil {
 		panic(err)
