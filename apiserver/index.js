@@ -7,7 +7,8 @@ const Sequelize = require('sequelize');
 const path = require('path');
 const moment = require('moment');
 
-const sequelize = new Sequelize(process.env.DATABASE_URI || 'mysql://' + process.env.RDS_USERNAME + ':' + process.env.RDS_PASSWORD + '@' + process.env.RDS_HOSTNAME + ':' + process.env.RDS_PORT + '/' + process.env.RDS_DB_NAME, {omitNull: true});
+// const sequelize = new Sequelize(process.env.DATABASE_URI || 'mysql://' + process.env.RDS_USERNAME + ':' + process.env.RDS_PASSWORD + '@' + process.env.RDS_HOSTNAME + ':' + process.env.RDS_PORT + '/' + process.env.RDS_DB_NAME, {omitNull: true});
+const sequelize = new Sequelize('mysql://user:secret@127.0.0.1:3306/obpsearch', {omitNull: true});
 
 const Item = sequelize.import('./models/item');
 const Node = sequelize.import('./models/node');
@@ -83,7 +84,7 @@ app.get('/search/listings', (req, res) => {
                 [sequelize.Op.gt]: moment(new Date()).subtract(8, 'hours').toDate()
             },
             listed: true,
-            banned: false
+            blocked: false
         }
     }];
     Item.findAndCountAll(options).then((out) => {
