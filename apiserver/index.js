@@ -142,6 +142,7 @@ app.get('/search/listings', (req, res) => {
                     moderators: []
                 },
                 data: {
+                    score: r.score,
                     hash: r.hash,
                     slug: r.slug,
                     title: r.title,
