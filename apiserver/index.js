@@ -3,6 +3,7 @@
 const express = require('express');
 const app = express();
 const Sequelize = require('sequelize');
+
 const path = require('path');
 const moment = require('moment');
 
@@ -36,7 +37,7 @@ app.get('/search/listings', (req, res) => {
 
     if (req.query.rating) {
         options.where.rating = {
-            $gte: {
+            [sequelize.Op.gte]: {
                 5: 4.75,
                 4: 4,
                 3: 3,
@@ -79,7 +80,7 @@ app.get('/search/listings', (req, res) => {
         model: Node,
         where: {
             lastUpdated: {
-                $gt: moment(new Date()).subtract(8, 'hours').toDate()
+                [sequelize.Op.gt]: moment(new Date()).subtract(8, 'hours').toDate()
             },
             listed: true,
             banned: false
