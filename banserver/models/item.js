@@ -7,20 +7,30 @@ module.exports = function(sequelize, DataTypes){
             unique: false,
             primaryKey: true
         },
+        score: DataTypes.INTEGER,
         slug: DataTypes.STRING(70),
         title: DataTypes.STRING(140),
         tags: DataTypes.STRING(410),
+        categories: DataTypes.STRING(410),
+        contractType: DataTypes.STRING(20),
         description: DataTypes.TEXT,
-        thumbnail: DataTypes.STRING(160),
+        thumbnail: DataTypes.STRING(260),
         language: DataTypes.STRING(20),
+
+        //price
         priceAmount: DataTypes.BIGINT,
         priceCurrency: DataTypes.STRING(10),
-        categories: DataTypes.STRING(410),
+        priceModifier: DataTypes.INTEGER,
+
         nsfw: DataTypes.BOOLEAN,
-        contractType: DataTypes.STRING(20),
-        rating: DataTypes.DECIMAL(3, 2)
+        averageRating: DataTypes.INTEGER,
+        ratingCount: DataTypes.INTEGER,
+
+        coinType: DataTypes.STRING(20),
+        coinDivisibility: DataTypes.INTEGER,
+        normalizedPrice: DataTypes.DOUBLE,
     }, {
         freezeTableName: true,
         timestamps: false
-    })
+    });
 };

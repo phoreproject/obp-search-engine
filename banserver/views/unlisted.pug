@@ -1,0 +1,36 @@
+extends index
+
+block nav
+  li.active
+    a(href='/unlisted')
+      | Unlisted 
+      span.sr-only (current)
+  li
+    a(href='/banned') Banned
+
+block content
+  table.table.table-bordered.table-striped.main-table
+    thead
+      th ID
+      th # Listings
+      th Name
+      th Short Description
+      th Actions
+    tbody
+      each node in nodes
+        tr
+          td
+            a(href="pm://#{node.id}") #{node.id}
+          td #{node.listingCount}
+          td #{node.name}
+          td #{node.shortDescription}
+          td
+            .btn-group
+              button.btn.btn-primary(type="button", onclick='window.location = "/list/#{node.id}"') List
+              button.btn.btn-danger(type="button", onclick='window.location = "/ban/#{node.id}"') Ban
+  hr
+  h5 Unlist User
+  form.form-inline.main-form
+    .form-group
+      input.form-control#js-peerid(type="text", placeholder="Peer ID")
+    button.btn.btn-default#js-unlist(type="submit") Unlist

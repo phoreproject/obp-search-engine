@@ -14,7 +14,7 @@ const cookieParser = require('cookie-parser');
 // all environments
 app.set('port', process.env.PORT || 8000);
 app.set('views', __dirname + '/views');
-app.set('view engine', 'jade');
+app.set('view engine', 'pug');
 // Middlewares
 let favicon = require('serve-favicon');
 let morgan = require('morgan');
@@ -38,7 +38,7 @@ function handleUnlisted(req, res) {
     db.nodes.findAll({
         where: {
             listed: false,
-            banned: false
+            blocked: false
         },
         order: [
             ['name', 'DESC']
@@ -71,7 +71,7 @@ app.get('/unlisted', handleUnlisted);
 app.get('/banned', (req, res) => {
     db.nodes.findAll({
         where: {
-            banned: true
+            blocked: true
         }
     }).then((ns) => {
         res.render('banned', {nodes: ns.map((n) => n.toJSON())});
@@ -97,7 +97,7 @@ app.get('/ban/:id', (req, res) => {
             id: req.param('id')
         }
     }).then((n) => {
-        n.banned = true;
+        n.blocked = true;
         return n.save();
     }).then(() => {
         res.redirect('/banned');
@@ -123,7 +123,7 @@ app.get('/unban/:id', (req, res) => {
             id: req.param('id')
         }
     }).then((n) => {
-        n.banned = false;
+        n.blocked = false;
         return n.save();
     }).then(() => {
         res.redirect('/');
