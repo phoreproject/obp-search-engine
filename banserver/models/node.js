@@ -25,7 +25,7 @@ module.exports = function(sequelize, DataTypes){
     }, {
         freezeTableName: true,
         timestamps: false
-    })
+    });
 };
 
 //about VARCHAR(10000), shortDescription VARCHAR(160), followerCount INT, followingCount INT, listingCount INT, postCount INT, ratingCount INT, averageRating DECIMAL(3, 2), PRIMARY KEY (id))
