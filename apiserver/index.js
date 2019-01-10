@@ -12,6 +12,7 @@ const sequelize = new Sequelize('mysql://user:secret@127.0.0.1:3306/obpsearch', 
 
 const Item = sequelize.import('./models/item');
 const Node = sequelize.import('./models/node');
+const Moderator = sequelize.import('./models/moderator');
 Item.belongsTo(Node, {foreignKey: 'owner'});
 
 app.get('/logo.png', (req, res) => {
@@ -175,6 +176,43 @@ app.get('/search/listings', (req, res) => {
         res.send(result);
     });
 });
+
+app.get('/verified_moderators', (req, res) => {
+    const options = {};
+    options.where = {
+        isVerified: true
+    };
+    Moderator.findAll(options).then((out) => {
+        const result = {
+            data: {
+                name: 'Marketplace',
+                description: '',
+                link: 'https://search.phore.io/verified_moderators.html'
+            },
+            types: [
+                {
+                    name: 'standard',
+                    description: 'A moderator that has been vetted by Phore',
+                    badge: {
+                        tiny: 'https://search.ob1.io/images/verified_moderator_badge_tiny.png',
+                        small: 'https://search.ob1.io/images/verified_moderator_badge_small.png',
+                        medium: 'https://search.ob1.io/images/verified_moderator_badge_medium.png',
+                        large: 'https://search.ob1.io/images/verified_moderator_badge_large.png',
+                    }
+                }
+            ],
+            moderators: [],
+        };
+        for (const r of out.rows) {
+            result.moderators.push({
+                peerID: r.id,
+                type: r.type,
+            });
+        }
+        res.send(result);
+    });
+});
+
 
 app.listen(process.env.PORT || 3000, () => {
     console.log('Listening on port ' + (process.env.PORT || 3000));

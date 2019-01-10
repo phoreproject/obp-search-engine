@@ -36,6 +36,9 @@ func NewSQLDatastore(db *sql.DB) (*SQLDatastore, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	_, err = db.Exec("CREATE TABLE IF NOT EXISTS moderators (id VARCHAR(50) NOT NULL, type VARCHAR(16), " +
+		"isVerified TINYINT(1) DEFAULT 0), PRIMARY KEY(id)")
 	return &SQLDatastore{db: db}, nil
 }
 
