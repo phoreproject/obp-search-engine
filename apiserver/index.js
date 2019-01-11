@@ -12,7 +12,8 @@ const sequelize = new Sequelize('mysql://user:secret@127.0.0.1:3306/obpsearch', 
 
 const Item = sequelize.import('./models/item');
 const Node = sequelize.import('./models/node');
-const Moderator = sequelize.import('./models/moderator');
+const Moderators = sequelize.import('./models/moderators');
+const ModeratorIdsPerItem = sequelize.import('./moderatorIdsPerItem');
 
 Item.belongsTo(Node, {foreignKey: 'peerID'});
 
@@ -27,19 +28,19 @@ app.get('/', (req, res) => {
 });
 
 app.get('/search/listings', (req, res) => {
-    const options = {};
+    const itemQueryOptions = {};
     const page = req.query.p || 0;
     const ps = Math.min(req.query.ps || 20, 100);
     const nsfw = req.query.nsfw || false;
     const orderBy = req.query.sortBy || 'RELEVANCE';
 
-    options.limit = ps;
-    options.offset = ps * page;
-    options.where = {};
-    options.where.nsfw = nsfw;
+    itemQueryOptions.limit = ps;
+    itemQueryOptions.offset = ps * page;
+    itemQueryOptions.where = {};
+    itemQueryOptions.where.nsfw = nsfw;
 
     if (req.query.rating) {
-        options.where.rating = {
+        itemQueryOptions.where.rating = {
             [sequelize.Op.gte]: {
                 5: 4.75,
                 4: 4,
@@ -49,20 +50,20 @@ app.get('/search/listings', (req, res) => {
             }[Number(req.query.rating)]
         };
     }
-    options.order = [[]];
+    itemQueryOptions.order = [[]];
 
     if (orderBy.startsWith('PRICE')) {
-        options.order[0][0] = 'priceAmount';
+        itemQueryOptions.order[0][0] = 'priceAmount';
     } else if (orderBy.startsWith('RATING')) {
-        options.order[0][0] = 'rating';
+        itemQueryOptions.order[0][0] = 'rating';
     }
     if (orderBy.endsWith('DESC')) {
-        options.order[0][1] = 'DESC';
+        itemQueryOptions.order[0][1] = 'DESC';
     } else if (orderBy.endsWith('ASC')) {
-        options.order[0][1] = 'ASC';
+        itemQueryOptions.order[0][1] = 'ASC';
     }
-    if (options.order[0].length === 0) {
-        options.order = undefined;
+    if (itemQueryOptions.order[0].length === 0) {
+        itemQueryOptions.order = undefined;
     }
     console.log(req.query.q);
 
@@ -77,7 +78,7 @@ app.get('/search/listings', (req, res) => {
             [sequelize.Op.or]: words
         };
 
-        options.where = {
+        itemQueryOptions.where = {
             [sequelize.Op.or]: {
                 title: oneOfWordsInTitle,
                 tags: oneOfWordsInTitle
@@ -85,7 +86,7 @@ app.get('/search/listings', (req, res) => {
         };
     }
 
-    options.include = [{
+    itemQueryOptions.include = [{
         model: Node,
         where: {
             lastUpdated: {
@@ -96,7 +97,7 @@ app.get('/search/listings', (req, res) => {
         }
     }];
 
-    Item.findAndCountAll(options).then((out) => {
+    Item.findAndCountAll(itemQueryOptions).then((out) => {
         const result = Object.assign(config, {
             results: {
                 total: out.count,
@@ -104,6 +105,20 @@ app.get('/search/listings', (req, res) => {
                 results: []
             }
         });
+
+        // const moderatorQueryOptions = {
+        //     where:
+        //         {
+        //             peerID: {
+        //                 [sequelize.Op.is]: '' // peerID, but how to provide it? :(
+        //             }
+        //         }
+        // };
+        // ModeratorIdsPerItem.findAll(moderatorQueryOptions).then((out) => {
+        //
+        // });
+
+
         for (const r of out.rows) {
             let thumbnails = r.thumbnail.split(',');
             result.results.results.push({
@@ -190,7 +205,7 @@ app.get('/verified_moderators', (req, res) => {
     options.where = {
         isVerified: true
     };
-    Moderator.findAll(options).then((out) => {
+    Moderators.findAll(options).then((out) => {
         const result = {
             data: {
                 name: 'Marketplace',
