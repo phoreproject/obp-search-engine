@@ -32,7 +32,7 @@ app.get('/search/listings', (req, res) => {
     const ps = Math.min(req.query.ps || 20, 100);
     const nsfw = req.query.nsfw || false;
     const orderBy = req.query.sortBy || 'RELEVANCE';
-    
+
     options.limit = ps;
     options.offset = ps * page;
     options.where = {};
@@ -65,20 +65,26 @@ app.get('/search/listings', (req, res) => {
         options.order = undefined;
     }
     console.log(req.query.q);
-    let query = {
-        [sequelize.Op.like]: '%'
-    };
+
     if (req.query.q && req.query.q !== '*') {
-        const words = req.query.q.replace(/[^\w]/g, "").split(" ").map((word) => {
+        // const words = req.query.q.replace(/[^\w]/g, '').split(' ') old version, why this replace pattern?
+        const words = req.query.q.split(' ').map((word) => {
             return {
                 [sequelize.Op.like]: '%' + word + '%'
             };
         });
-        query = {
+        const oneOfWordsInTitle = {
             [sequelize.Op.or]: words
         };
+
+        options.where = {
+            [sequelize.Op.or]: {
+                title: oneOfWordsInTitle,
+                tags: oneOfWordsInTitle
+            }
+        };
     }
-    options.where.title = query;
+
     options.include = [{
         model: Node,
         where: {
@@ -89,6 +95,7 @@ app.get('/search/listings', (req, res) => {
             blocked: false
         }
     }];
+
     Item.findAndCountAll(options).then((out) => {
         const result = Object.assign(config, {
             results: {
