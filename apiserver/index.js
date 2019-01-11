@@ -13,7 +13,7 @@ const sequelize = new Sequelize('mysql://user:secret@127.0.0.1:3306/obpsearch', 
 const Item = sequelize.import('./models/item');
 const Node = sequelize.import('./models/node');
 const Moderators = sequelize.import('./models/moderators');
-const ModeratorIdsPerItem = sequelize.import('./moderatorIdsPerItem');
+const ModeratorIdsPerItem = sequelize.import('./models/moderatorIdsPerItem');
 
 Item.belongsTo(Node, {foreignKey: 'peerID'});
 
@@ -27,99 +27,119 @@ app.get('/', (req, res) => {
     res.send(config);
 });
 
-app.get('/search/listings', (req, res) => {
-    const itemQueryOptions = {};
-    const page = req.query.p || 0;
-    const ps = Math.min(req.query.ps || 20, 100);
-    const nsfw = req.query.nsfw || false;
-    const orderBy = req.query.sortBy || 'RELEVANCE';
+app.get('/search/listings', async (req, res) => {
+    try {
+        const itemQueryOptions = {};
+        const page = req.query.p || 0;
+        const ps = Math.min(req.query.ps || 20, 100);
+        const nsfw = req.query.nsfw || false;
+        const orderBy = req.query.sortBy || 'RELEVANCE';
 
-    itemQueryOptions.limit = ps;
-    itemQueryOptions.offset = ps * page;
-    itemQueryOptions.where = {};
-    itemQueryOptions.where.nsfw = nsfw;
+        itemQueryOptions.limit = ps;
+        itemQueryOptions.offset = ps * page;
+        itemQueryOptions.where = {};
+        itemQueryOptions.where.nsfw = nsfw;
 
-    if (req.query.rating) {
-        itemQueryOptions.where.rating = {
-            [sequelize.Op.gte]: {
-                5: 4.75,
-                4: 4,
-                3: 3,
-                2: 2,
-                1: 0
-            }[Number(req.query.rating)]
-        };
-    }
-    itemQueryOptions.order = [[]];
-
-    if (orderBy.startsWith('PRICE')) {
-        itemQueryOptions.order[0][0] = 'priceAmount';
-    } else if (orderBy.startsWith('RATING')) {
-        itemQueryOptions.order[0][0] = 'rating';
-    }
-    if (orderBy.endsWith('DESC')) {
-        itemQueryOptions.order[0][1] = 'DESC';
-    } else if (orderBy.endsWith('ASC')) {
-        itemQueryOptions.order[0][1] = 'ASC';
-    }
-    if (itemQueryOptions.order[0].length === 0) {
-        itemQueryOptions.order = undefined;
-    }
-    console.log(req.query.q);
-
-    if (req.query.q && req.query.q !== '*') {
-        // const words = req.query.q.replace(/[^\w]/g, '').split(' ') old version, why this replace pattern?
-        const words = req.query.q.split(' ').map((word) => {
-            return {
-                [sequelize.Op.like]: '%' + word + '%'
+        // create query to filter by rating
+        if (req.query.rating) {
+            itemQueryOptions.where.rating = {
+                [sequelize.Op.gte]: {
+                    5: 4.75,
+                    4: 4,
+                    3: 3,
+                    2: 2,
+                    1: 0
+                }[Number(req.query.rating)]
             };
-        });
-        const oneOfWordsInTitle = {
-            [sequelize.Op.or]: words
-        };
-
-        itemQueryOptions.where = {
-            [sequelize.Op.or]: {
-                title: oneOfWordsInTitle,
-                tags: oneOfWordsInTitle
-            }
-        };
-    }
-
-    itemQueryOptions.include = [{
-        model: Node,
-        where: {
-            lastUpdated: {
-                [sequelize.Op.gt]: moment(new Date()).subtract(8, 'hours').toDate()
-            },
-            listed: true,
-            blocked: false
         }
-    }];
+        itemQueryOptions.order = [[]];
 
-    Item.findAndCountAll(itemQueryOptions).then((out) => {
+        // create query to order by
+        if (orderBy.startsWith('PRICE')) {
+            itemQueryOptions.order[0][0] = 'priceAmount';
+        } else if (orderBy.startsWith('RATING')) {
+            itemQueryOptions.order[0][0] = 'rating';
+        }
+        if (orderBy.endsWith('DESC')) {
+            itemQueryOptions.order[0][1] = 'DESC';
+        } else if (orderBy.endsWith('ASC')) {
+            itemQueryOptions.order[0][1] = 'ASC';
+        }
+        if (itemQueryOptions.order[0].length === 0) {
+            itemQueryOptions.order = undefined;
+        }
+        console.log(req.query.q);
+
+        // create query to filter by searching name or tag
+        if (req.query.q && req.query.q !== '*') {
+            // const words = req.query.q.replace(/[^\w]/g, '').split(' ') old version, why this replace pattern?
+            const words = req.query.q.split(' ').map((word) => {
+                return {
+                    [sequelize.Op.like]: '%' + word + '%'
+                };
+            });
+            const oneOfWordsInTitle = {
+                [sequelize.Op.or]: words
+            };
+
+            itemQueryOptions.where = {
+                [sequelize.Op.or]: {
+                    title: oneOfWordsInTitle,
+                    tags: oneOfWordsInTitle
+                }
+            };
+        }
+
+        itemQueryOptions.include = [{
+            model: Node,
+            where: {
+                lastUpdated: {
+                    [sequelize.Op.gt]: moment(new Date()).subtract(8, 'hours').toDate()
+                },
+                listed: true,
+                blocked: false
+            }
+        }];
+
+        // remove duplicated peerID's
+        const itemQueryOutput = await Item.findAndCountAll(itemQueryOptions);
+        let peerIDs = new Set();
+        itemQueryOutput.rows.forEach((item) => {
+            peerIDs.add(item.peerID);
+        });
+        peerIDs = Array.from(peerIDs);
+
+        // search for moderators for each peerID
+        let moderators = {};
+        for (let i in peerIDs) {
+            const moderatorQueryOptions = {
+                where:
+                    {
+                        peerID: {
+                            [sequelize.Op.eq]: peerIDs[i]
+                        }
+                    }
+            };
+
+            let mods = await ModeratorIdsPerItem.findAll(moderatorQueryOptions);
+            if (mods !== undefined && mods.length > 0) {
+                moderators[peerIDs[i]] = [];
+                for (let j in mods) {
+                    moderators[peerIDs[i]].push(mods[j].dataValues.moderatorID);
+                }
+            }
+        }
+
+        // create result dictionary
         const result = Object.assign(config, {
             results: {
-                total: out.count,
-                morePages: out.count > ps,
+                total: itemQueryOutput.count,
+                morePages: itemQueryOutput.count > ps,
                 results: []
             }
         });
 
-        // const moderatorQueryOptions = {
-        //     where:
-        //         {
-        //             peerID: {
-        //                 [sequelize.Op.is]: '' // peerID, but how to provide it? :(
-        //             }
-        //         }
-        // };
-        // ModeratorIdsPerItem.findAll(moderatorQueryOptions).then((out) => {
-        //
-        // });
-
-
-        for (const r of out.rows) {
+        for (const r of itemQueryOutput.rows) {
             let thumbnails = r.thumbnail.split(',');
             result.results.results.push({
                 type: 'listing',
@@ -163,7 +183,7 @@ app.get('/search/listings', (req, res) => {
                             }
                         }
                     },
-                    moderators: []
+                    moderators: (r.peerID in moderators) ? moderators[r.peerID] : []
                 },
                 data: {
                     score: r.score,
@@ -197,45 +217,48 @@ app.get('/search/listings', (req, res) => {
             });
         }
         res.send(result);
-    });
+    }
+    catch (err) {
+        return res.status(500).send(err);
+    }
 });
 
-app.get('/verified_moderators', (req, res) => {
+app.get('/verified_moderators', async (req, res) => {
     const options = {};
     options.where = {
         isVerified: true
     };
-    Moderators.findAll(options).then((out) => {
-        const result = {
-            data: {
-                name: 'Marketplace',
-                description: '',
-                link: 'https://search.phore.io/verified_moderators.html'
-            },
-            types: [
-                {
-                    name: 'standard',
-                    description: 'A moderator that has been vetted by Phore',
-                    badge: {
-                        tiny: 'https://search.ob1.io/images/verified_moderator_badge_tiny.png',
-                        small: 'https://search.ob1.io/images/verified_moderator_badge_small.png',
-                        medium: 'https://search.ob1.io/images/verified_moderator_badge_medium.png',
-                        large: 'https://search.ob1.io/images/verified_moderator_badge_large.png',
-                    }
+
+    const out = await Moderators.findAll(options);
+    const result = {
+        data: {
+            name: 'Marketplace',
+            description: '',
+            link: 'https://search.phore.io/verified_moderators.html'
+        },
+        types: [
+            {
+                name: 'standard',
+                description: 'A moderator that has been vetted by Phore',
+                badge: {
+                    tiny: 'https://search.ob1.io/images/verified_moderator_badge_tiny.png',
+                    small: 'https://search.ob1.io/images/verified_moderator_badge_small.png',
+                    medium: 'https://search.ob1.io/images/verified_moderator_badge_medium.png',
+                    large: 'https://search.ob1.io/images/verified_moderator_badge_large.png',
                 }
-            ],
-            moderators: [],
-        };
-        if (out.length !== 0) {
-            for (const r of out) {
-                result.moderators.push({
-                    peerID: r.id,
-                    type: r.type,
-                });
             }
+        ],
+        moderators: [],
+    };
+    if (out.length !== 0) {
+        for (const r of out) {
+            result.moderators.push({
+                peerID: r.id,
+                type: r.type,
+            });
         }
-        res.send(result);
-    });
+    }
+    res.send(result);
 });
 
 
