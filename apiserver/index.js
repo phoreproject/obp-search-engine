@@ -14,7 +14,7 @@ const Item = sequelize.import('./models/item');
 const Node = sequelize.import('./models/node');
 const Moderator = sequelize.import('./models/moderator');
 
-Item.belongsTo(Node, {foreignKey: 'owner'});
+Item.belongsTo(Node, {foreignKey: 'peerID'});
 
 app.get('/logo.png', (req, res) => {
     res.sendFile('logo.png', {root: path.join(__dirname)});
@@ -114,7 +114,7 @@ app.get('/search/listings', (req, res) => {
                             userAgent: r.node.userAgent,
                             lastSeen: r.node.lastUpdated,
                             blocked: r.node.blocked,
-                            peerID: r.owner,
+                            peerID: r.peerID,
                             name: r.node.name,
                             handle: r.node.handle,
                             location: r.node.location,

@@ -1,6 +1,6 @@
 module.exports = function(sequelize, DataTypes){
     return sequelize.define('items', {
-        owner: DataTypes.STRING(50),
+        peerID: DataTypes.STRING(50),
         hash: {
             type: DataTypes.STRING(50),
             allowNull: false,

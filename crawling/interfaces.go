@@ -41,26 +41,27 @@ type Thumbnail struct {
 
 // Item represents a single listing in Phore Marketplace
 type Item struct {
-	Score              uint32    `json:"score"`
+	Score              uint32    `json:"score"` // it is missing in api
 	Hash               string    `json:"hash"`
 	Slug               string    `json:"slug"`
 	Title              string    `json:"title"`
 	Tags               []string  `json:"tags"`
 	Categories         []string  `json:"categories"`
+	NSFW               bool      `json:"nsfw"`
 	ContractType       string    `json:"contractType"`
 	Description        string    `json:"description"`
 	Thumbnail          Thumbnail `json:"thumbnail"`
-	Language           string    `json:"language"`
 	Price              Price     `json:"price"`
-	NSFW               bool      `json:"nsfw"`
-	AverageRating      float32   `json:"averageRating"`
-	RatingCount        uint32    `json:"ratingCount"`
 	ShipsTo            []string  `json:"shipsTo"`
 	FreeShipping       []string  `json:"freeShipping"`
+	Language           string    `json:"language"`
+	AverageRating      float32   `json:"averageRating"`
+	RatingCount        uint32    `json:"ratingCount"`
+	ModeratorIDs       []string  `json:"moderators"`
 	AcceptedCurrencies []string  `json:"acceptedCurrencies"`
 	CoinType           string    `json:"coinType"`
 	CoinDivisibility   uint32    `json:"coinDivisibility"`
-	NormalizedPrice    float64   `json:"normalizedPrice"`
+	NormalizedPrice    float64   `json:"normalizedPrice"`  // it is missing in api
 }
 
 type ProfileSocialAccount struct {
