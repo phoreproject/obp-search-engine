@@ -13,6 +13,7 @@ const sequelize = new Sequelize('mysql://user:secret@127.0.0.1:3306/obpsearch', 
 const Item = sequelize.import('./models/item');
 const Node = sequelize.import('./models/node');
 const Moderator = sequelize.import('./models/moderator');
+
 Item.belongsTo(Node, {foreignKey: 'owner'});
 
 app.get('/logo.png', (req, res) => {
@@ -116,20 +117,20 @@ app.get('/search/listings', (req, res) => {
                             verifiedModerator: r.node.verifiedModerator,
                             about: r.node.about,
                             shortDescription: r.node.shortDescription,
-                            // avatarHashes: { // TODO add this data to other table and fetch before items
-                            //     tiny: r.node.avatarTinyHash,
-                            //     small: r.node.avatarSmallHash,
-                            //     medium: r.node.avatarMediumHash,
-                            //     original: r.node.avatarOriginalHash,
-                            //     large: r.node.avatarLargeHash
-                            // },
-                            // headerHashes: {
-                            //     tiny: r.node.headerTinyHash,
-                            //     small: r.node.headerSmallHash,
-                            //     medium: r.node.headerMediumHash,
-                            //     original: r.node.headerOriginalHash,
-                            //     large: r.node.headerLargeHash
-                            // },
+                            avatarHashes: {
+                                tiny: r.node.avatarTinyHash,
+                                small: r.node.avatarSmallHash,
+                                medium: r.node.avatarMediumHash,
+                                original: r.node.avatarOriginalHash,
+                                large: r.node.avatarLargeHash
+                            },
+                            headerHashes: {
+                                tiny: r.node.headerTinyHash,
+                                small: r.node.headerSmallHash,
+                                medium: r.node.headerMediumHash,
+                                original: r.node.headerOriginalHash,
+                                large: r.node.headerLargeHash
+                            },
                             stats: {
                                 followerCount: r.node.followerCount,
                                 followingCount: r.node.followingCount,
@@ -203,11 +204,13 @@ app.get('/verified_moderators', (req, res) => {
             ],
             moderators: [],
         };
-        for (const r of out.rows) {
-            result.moderators.push({
-                peerID: r.id,
-                type: r.type,
-            });
+        if (out.length !== 0) {
+            for (const r of out) {
+                result.moderators.push({
+                    peerID: r.id,
+                    type: r.type,
+                });
+            }
         }
         res.send(result);
     });

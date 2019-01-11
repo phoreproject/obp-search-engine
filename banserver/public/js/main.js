@@ -1,6 +1,6 @@
 $('#js-unlist').click((e) => {
-  e.preventDefault()
+  e.preventDefault();
   $.get(`/unlist/${$('#js-peerid').val()}`, () => {
-    window.location.reload(true)
-  })
-})
+    window.location.reload(true);
+  });
+});

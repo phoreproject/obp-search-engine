@@ -23,16 +23,19 @@ func NewSQLDatastore(db *sql.DB) (*SQLDatastore, error) {
 		"name VARCHAR(40), handle VARCHAR(40), location VARCHAR(40), nsfw TINYINT(1), vendor TINYINT(1), moderator TINYINT(1), " +
 		"verifiedModerator TINYINT(1) DEFAULT 0, about VARCHAR(10000), shortDescription VARCHAR(160), followerCount INT, " +
 		"followingCount INT, listingCount INT, postCount INT, ratingCount INT, averageRating DECIMAL(3, 2), listed TINYINT(1) DEFAULT 0, " +
-		"blocked TINYINT(1) DEFAULT 0, PRIMARY KEY (id))")
+		"blocked TINYINT(1) DEFAULT 0, " +
+		"avatarTinyHash VARCHAR(50), avatarSmallHash VARCHAR(50), avatarMediumHash VARCHAR(50), avatarOriginalHash VARCHAR(50), avatarLargeHash VARCHAR(50), " +
+		"headerTinyHash VARCHAR(50), headerSmallHash VARCHAR(50), headerMediumHash VARCHAR(50), headerOriginalHash VARCHAR(50), headerLargeHash VARCHAR(50), " +
+		"PRIMARY KEY (id))")
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = db.Exec("CREATE TABLE IF NOT EXISTS items (owner VARCHAR(50), score TINYINT, hash VARCHAR(50) NOT NULL," +
-		" slug VARCHAR(70), title VARCHAR(140), tags VARCHAR(410), categories VARCHAR(410), contractType VARCHAR(20)," +
-		" description TEXT, thumbnail VARCHAR(260), language VARCHAR(20), priceAmount BIGINT, priceCurrency VARCHAR(10)," +
-		" priceModifier INT, nsfw TINYINT(1), averageRating INT, ratingCount INT, coinType VARCHAR(20), coinDivisibility INT," +
-		" normalizedPrice DECIMAL(40, 20), PRIMARY KEY (hash))")
+	_, err = db.Exec("CREATE TABLE IF NOT EXISTS items (owner VARCHAR(50), score TINYINT, hash VARCHAR(50) NOT NULL, " +
+		"slug VARCHAR(70), title VARCHAR(140), tags VARCHAR(410), categories VARCHAR(410), contractType VARCHAR(20), " +
+		"description TEXT, thumbnail VARCHAR(260), language VARCHAR(20), priceAmount BIGINT, priceCurrency VARCHAR(10), " +
+		"priceModifier INT, nsfw TINYINT(1), averageRating INT, ratingCount INT, coinType VARCHAR(20), coinDivisibility INT, " +
+		"normalizedPrice DECIMAL(40, 20), PRIMARY KEY (hash))")
 	if err != nil {
 		return nil, err
 	}
@@ -83,16 +86,29 @@ func (d *SQLDatastore) SaveNode(n crawling.Node) error {
 	if err != nil {
 		return err
 	}
-
 	insertStatement, err := tx.Prepare("INSERT INTO nodes (id, lastUpdated, userAgent, name, handle, location, nsfw, vendor, " +
-		"moderator, about, shortDescription, followerCount, followingCount, listingCount, postCount, ratingCount, averageRating) " +
-		"VALUES (?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE lastUpdated=NOW(), userAgent=?, name=?, " +
-		"handle=?, location=?, nsfw=?, vendor=?, moderator=?, about=?, shortDescription=?, followerCount=?, followingCount=?, " +
-		"listingCount=?, postCount=?, ratingCount=?, averageRating=?")
+		"moderator, about, shortDescription, followerCount, followingCount, listingCount, postCount, ratingCount, averageRating, " +
+		"avatarTinyHash, avatarSmallHash, avatarMediumHash, avatarOriginalHash, avatarLargeHash, " +
+		"headerTinyHash, headerSmallHash, headerMediumHash, headerOriginalHash, headerLargeHash) " +
+		"VALUES (?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE " +
+		"lastUpdated=NOW(), userAgent=?, name=?, handle=?, location=?, nsfw=?, vendor=?, moderator=?, about=?, shortDescription=?, " +
+		"followerCount=?, followingCount=?, listingCount=?, postCount=?, ratingCount=?, averageRating=?, " +
+		"avatarTinyHash=?, avatarSmallHash=?, avatarMediumHash=?, avatarOriginalHash=?, avatarLargeHash=?, " +
+		"headerTinyHash=?, headerSmallHash=?, headerMediumHash=?, headerOriginalHash=?, headerLargeHash=? ")
 	if err != nil {
 		return err
 	}
 	defer insertStatement.Close()
+
+	avatarHashes := crawling.ProfileImage{}
+	if n.Profile.AvatarHashes == nil {
+		n.Profile.AvatarHashes = &avatarHashes
+	}
+
+	headerHashes := crawling.ProfileImage{}
+	if n.Profile.HeaderHashes == nil {
+		n.Profile.HeaderHashes = &headerHashes
+	}
 
 	_, err = tx.Stmt(insertStatement).Exec(
 		n.ID,
@@ -105,6 +121,8 @@ func (d *SQLDatastore) SaveNode(n crawling.Node) error {
 		n.Profile.Moderator,
 		n.Profile.About,
 		n.Profile.ShortDescription,
+
+		// stats
 		n.Profile.Stats.FollowerCount,
 		n.Profile.Stats.FollowingCount,
 		n.Profile.Stats.ListingCount,
@@ -112,7 +130,21 @@ func (d *SQLDatastore) SaveNode(n crawling.Node) error {
 		n.Profile.Stats.RatingCount,
 		n.Profile.Stats.AverageRating,
 
-		// on duplicated
+		// avatar hashes
+		n.Profile.AvatarHashes.Tiny,
+		n.Profile.AvatarHashes.Small,
+		n.Profile.AvatarHashes.Medium,
+		n.Profile.AvatarHashes.Original,
+		n.Profile.AvatarHashes.Large,
+
+		// header hashes
+		n.Profile.HeaderHashes.Tiny,
+		n.Profile.HeaderHashes.Small,
+		n.Profile.HeaderHashes.Medium,
+		n.Profile.HeaderHashes.Original,
+		n.Profile.HeaderHashes.Large,
+
+		// ON DUPLICATED UPDATE
 		n.UserAgent,
 		n.Profile.Name,
 		n.Profile.Handle,
@@ -122,12 +154,28 @@ func (d *SQLDatastore) SaveNode(n crawling.Node) error {
 		n.Profile.Moderator,
 		n.Profile.About,
 		n.Profile.ShortDescription,
+
+		// stats again
 		n.Profile.Stats.FollowerCount,
 		n.Profile.Stats.FollowingCount,
 		n.Profile.Stats.ListingCount,
 		n.Profile.Stats.PostCount,
 		n.Profile.Stats.RatingCount,
 		n.Profile.Stats.AverageRating,
+
+		// avatar hashes again
+		n.Profile.AvatarHashes.Tiny,
+		n.Profile.AvatarHashes.Small,
+		n.Profile.AvatarHashes.Medium,
+		n.Profile.AvatarHashes.Original,
+		n.Profile.AvatarHashes.Large,
+
+		// header hashes again
+		n.Profile.HeaderHashes.Tiny,
+		n.Profile.HeaderHashes.Small,
+		n.Profile.HeaderHashes.Medium,
+		n.Profile.HeaderHashes.Original,
+		n.Profile.HeaderHashes.Large,
 	)
 	if err != nil {
 		return err

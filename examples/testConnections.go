@@ -68,30 +68,38 @@ func testDB() {
 	}
 
 	r := rpc.NewRPC(*rpcURL)
+	fmt.Println("Downloading configuration")
 	config, err := r.GetConfig()
 	if err != nil {
 		panic(err)
 	}
 
 	peerId := config.PeerID
+	fmt.Println("Downloading connections, it can take a while.")
 	connections, err := r.GetConnections(peerId)
+	fmt.Println("Downloading profile information")
 	profile, err := r.GetProfile(peerId)
+	fmt.Println("Downloading user agent")
 	userAgent, err := r.GetUserAgent(peerId)
 
 	node := crawling.Node{peerId, userAgent, connections, time.Now(), profile}
+	fmt.Println("Saving node into db")
 	err = sqlDataStore.SaveNode(node)
 	if err != nil {
 		panic(err)
 	}
 
+	fmt.Println("Downloading listings")
 	items, err := r.GetItems(peerId)
 	if err != nil {
 		panic(err)
 	}
 
+	fmt.Println("Saving listings into db")
 	if err = sqlDataStore.AddItemsForNode(peerId, items); err != nil {
 		panic(err)
 	}
+
 }
 
 func main() {
