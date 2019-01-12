@@ -17,8 +17,7 @@ type SQLDatastore struct {
 	db *sql.DB
 }
 
-// NewSQLDatastore creates a new datastore given MySQL connection info
-func NewSQLDatastore(db *sql.DB) (*SQLDatastore, error) {
+func CreateNewDatabaseTables(db *sql.DB) (*SQLDatastore, error) {
 	_, err := db.Exec("CREATE TABLE IF NOT EXISTS nodes (userAgent VARCHAR(50), id VARCHAR(50) NOT NULL, lastUpdated DATETIME, " +
 		"name VARCHAR(40), handle VARCHAR(40), location VARCHAR(40), nsfw TINYINT(1), vendor TINYINT(1), moderator TINYINT(1), " +
 		"verifiedModerator TINYINT(1) DEFAULT 0, about VARCHAR(10000), shortDescription VARCHAR(160), followerCount INT, " +
@@ -52,6 +51,14 @@ func NewSQLDatastore(db *sql.DB) (*SQLDatastore, error) {
 		return nil, err
 	}
 	return &SQLDatastore{db: db}, nil
+}
+
+// NewSQLDatastore creates a new datastore given MySQL connection info
+func NewSQLDatastore(db *sql.DB, migrate bool) (*SQLDatastore, error) {
+	if migrate {
+		return &SQLDatastore{db: db}, Migrate(db)
+	}
+	return CreateNewDatabaseTables(db)
 }
 
 // GetNextNode gets the next node from the database

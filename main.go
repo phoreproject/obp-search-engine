@@ -24,7 +24,7 @@ func main() {
 		panic(err)
 	}
 
-	d, err := db.NewSQLDatastore(database)
+	d, err := db.NewSQLDatastore(database, true)
 	if err != nil {
 		panic(err)
 	}
