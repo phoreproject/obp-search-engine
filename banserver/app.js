@@ -79,7 +79,9 @@ app.get('/banned', (req, res) => {
 });
 
 app.get('/moderators', (req, res) => {
-    res.render('moderators', {});
+    db.moderators.findAll().then((ns) => {
+        res.render('moderators', {moderators: ns.map((n) => n.toJSON())});
+    });
 });
 
 app.get('/list/:id', (req, res) => {

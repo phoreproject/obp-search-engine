@@ -10,3 +10,27 @@ block nav
         span.sr-only (current)
 
 block content
+    table.table.table-bordered.table-striped.main-table
+        thead
+            th ID
+            th Type
+            th IsVerified
+            th Actions
+        tbody
+            each moderator in moderators
+                tr
+                    td
+                        a(href="pm://" + moderator.id) #{moderator.id}
+                    td #{moderator.type}
+                    td #{!!moderator.isVerified}
+                    td
+                        .btn-group
+                        button.btn.btn-primary(type="button", onclick="window.location = '/verify/" + moderator.id + "'") Verify
+                        button.btn.btn-danger(type="button", onclick="window.location = '/unverify/" + moderator.id + "'") Unverify
+    hr
+    h5 Verify moderator
+    form.form-inline.main-form
+        .form-group
+            input.form-control#js-peerid(type="text", placeholder="Moderator ID")
+        button.btn.btn-default#js-verify(type="submit") Verify
+        button.btn.btn-default#js-unverify(type="submit") Unverify
