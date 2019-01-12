@@ -1,0 +1,12 @@
+extends index.pug
+
+block nav
+    li
+        a(href='/unlisted') Unlisted
+    li
+        a(href='/banned') Banned
+    li.active
+        a(href='/moderators') Moderators
+        span.sr-only (current)
+
+block content

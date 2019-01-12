@@ -78,6 +78,10 @@ app.get('/banned', (req, res) => {
     });
 });
 
+app.get('/moderators', (req, res) => {
+    res.render('moderators', {});
+});
+
 app.get('/list/:id', (req, res) => {
     db.nodes.find({
         where: {

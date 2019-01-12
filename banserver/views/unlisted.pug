@@ -3,10 +3,12 @@ extends index.pug
 block nav
   li.active
     a(href='/unlisted')
-      | Unlisted 
+      | Unlisted
       span.sr-only (current)
   li
     a(href='/banned') Banned
+  li
+    a(href='/moderators') Moderators
 
 block content
   table.table.table-bordered.table-striped.main-table
