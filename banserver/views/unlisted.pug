@@ -22,14 +22,14 @@ block content
       each node in nodes
         tr
           td
-            a(href="pm://#{node.id}") #{node.id}
+            a(href="pm://" + node.id) #{node.id}
           td #{node.listingCount}
           td #{node.name}
           td #{node.shortDescription}
           td
             .btn-group
-              button.btn.btn-primary(type="button", onclick='window.location = "/list/#{node.id}"') List
-              button.btn.btn-danger(type="button", onclick='window.location = "/ban/#{node.id}"') Ban
+              button.btn.btn-primary(type="button", onclick="window.location = '/list/" + node.id + "'") List
+              button.btn.btn-danger(type="button", onclick="window.location = '/ban/" + node.id + "'") Ban
   hr
   h5 Unlist User
   form.form-inline.main-form

@@ -23,12 +23,12 @@ block content
           each node in nodes
             tr
               td
-                a(href="pm://#{node.id}") #{node.id}
+                a(href="pm://" + node.id) #{node.id}
               td #{node.listingCount}
               td #{node.name}
               td #{node.shortDescription}
               td
-                button.btn.btn-success(type="button", onclick='window.location = "/unban/#{node.id}"') Unban
+                button.btn.btn-success(type="button", onclick="window.location = '/unban/" + node.id + "'") Unban
   else
     p 
       b None banned
