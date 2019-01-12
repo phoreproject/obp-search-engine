@@ -97,19 +97,6 @@ app.get('/list/:id', (req, res) => {
     });
 });
 
-app.get('/ban/:id', (req, res) => {
-    db.nodes.find({
-        where: {
-            id: req.param('id')
-        }
-    }).then((n) => {
-        n.blocked = true;
-        return n.save();
-    }).then(() => {
-        res.redirect('/banned');
-    });
-});
-
 app.get('/unlist/:id', (req, res) => {
     db.nodes.find({
         where: {
@@ -117,6 +104,19 @@ app.get('/unlist/:id', (req, res) => {
         }
     }).then((n) => {
         n.listed = false;
+        return n.save();
+    }).then(() => {
+        res.redirect('/banned');
+    });
+});
+
+app.get('/ban/:id', (req, res) => {
+    db.nodes.find({
+        where: {
+            id: req.param('id')
+        }
+    }).then((n) => {
+        n.blocked = true;
         return n.save();
     }).then(() => {
         res.redirect('/banned');
@@ -134,6 +134,27 @@ app.get('/unban/:id', (req, res) => {
     }).then(() => {
         res.redirect('/');
     });
+});
+
+function setIsVerified(req, res, value) {
+    db.moderators.find({
+        where: {
+            id: req.param('id')
+        }
+    }).then((mod) => {
+        mod.isVerified = value;
+        return mod.save();
+    }).then(() => {
+        res.redirect('/moderators')
+    });
+}
+
+app.get('/verify/:id', (req, res) => {
+    setIsVerified(req, res, true);
+});
+
+app.get('/unverify/:id', (req, res) => {
+    setIsVerified(req, res, false);
 });
 
 db.sequelize.sync().then(function () {

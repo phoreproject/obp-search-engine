@@ -4,3 +4,18 @@ $('#js-unlist').click((e) => {
     window.location.reload(true);
   });
 });
+
+
+$('#js-verify').click((e) => {
+    e.preventDefault();
+    $.get(`/verify/${$('#js-modid').val()}`, () => {
+        window.location.reload(true);
+    });
+});
+
+$('#js-unverify').click((e) => {
+    e.preventDefault();
+    $.get(`/unverify/${$('#js-modid').val()}`, () => {
+        window.location.reload(true);
+    });
+});
