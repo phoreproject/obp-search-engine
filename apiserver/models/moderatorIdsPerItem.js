@@ -15,7 +15,7 @@ module.exports = function (sequelize, DataTypes) {
             moderatorID: {
                 type: DataTypes.STRING(50),
                 allowNull: false,
-                unique: true,
+                unique: false,
                 primaryKey: true
             }
         },
