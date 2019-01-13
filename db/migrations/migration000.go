@@ -109,9 +109,16 @@ func (Migration000) Up(db *sql.DB) error {
 		return err
 	}
 
-	_, err = tx.Exec("SET " + SchemaVersion + " = 1;")
+	stmt, err := tx.Prepare("UPDATE configuration SET value = ? WHERE uniqueKey = ?")
 	if err != nil {
 		return err
 	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(1, DatabaseVersionKeyName)
+	if err != nil {
+		return err
+	}
+
 	return tx.Commit()
 }

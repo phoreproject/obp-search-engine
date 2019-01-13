@@ -7,6 +7,8 @@ import (
 	"strings"
 
 	"github.com/phoreproject/obp-search-engine/crawling"
+	"github.com/phoreproject/obp-search-engine/db/migrations"
+
 )
 
 // start mysql container
@@ -18,7 +20,23 @@ type SQLDatastore struct {
 }
 
 func CreateNewDatabaseTables(db *sql.DB) (*SQLDatastore, error) {
-	_, err := db.Exec("CREATE TABLE IF NOT EXISTS nodes (userAgent VARCHAR(50), id VARCHAR(50) NOT NULL, lastUpdated DATETIME, " +
+	_, err := db.Exec("CREATE TABLE IF NOT EXISTS configuration (uniqueKey VARCHAR(32) PRIMARY KEY, value TEXT)")
+	if err != nil {
+		return nil, err
+	}
+
+	statement, err := db.Prepare("INSERT INTO configuration (uniqueKey, value) VALUES(?, ?)")
+	if err != nil {
+		return nil, err
+	}
+	defer statement.Close()
+
+	_, err = statement.Exec(migrations.DatabaseVersionKeyName, migrations.DatabaseVersion)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = db.Exec("CREATE TABLE IF NOT EXISTS nodes (userAgent VARCHAR(50), id VARCHAR(50) NOT NULL, lastUpdated DATETIME, " +
 		"name VARCHAR(40), handle VARCHAR(40), location VARCHAR(40), nsfw TINYINT(1), vendor TINYINT(1), moderator TINYINT(1), " +
 		"verifiedModerator TINYINT(1) DEFAULT 0, about VARCHAR(10000), shortDescription VARCHAR(160), followerCount INT, " +
 		"followingCount INT, listingCount INT, postCount INT, ratingCount INT, averageRating DECIMAL(3, 2), listed TINYINT(1) DEFAULT 0, " +
