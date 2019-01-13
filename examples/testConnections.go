@@ -62,7 +62,7 @@ func testDB() {
 	if err != nil {
 		panic(err)
 	}
-	sqlDataStore, err := db.NewSQLDatastore(database)
+	sqlDataStore, err := db.NewSQLDatastore(database, false)
 	if err != nil {
 		panic(err)
 	}

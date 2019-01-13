@@ -25,7 +25,7 @@ func CreateNewDatabaseTables(db *sql.DB) (*SQLDatastore, error) {
 		return nil, err
 	}
 
-	statement, err := db.Prepare("INSERT INTO configuration (uniqueKey, value) VALUES(?, ?)")
+	statement, err := db.Prepare("INSERT IGNORE INTO configuration (uniqueKey, value) VALUES(?, ?)")
 	if err != nil {
 		return nil, err
 	}
