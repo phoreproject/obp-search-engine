@@ -2,40 +2,22 @@ package migrations
 
 import "database/sql"
 
-const SchemaVersion = "@SCHEMA_VERSION"
+const DatabaseVersionKeyName = "schema_version"
+const DatabaseVersion = 1
 
-
+// string concatenation is intended in functions below, because tx.Prepare cannot handle this syntax :(
 func AddColumn(tx sql.Tx, table string, columnName string, columnType string) error {
-	statement, err:= tx.Prepare("ALTER TABLE ? ADD ? ?")
-	if err != nil {
-		return err
-	}
-	defer statement.Close()
-
-	_, err = statement.Exec(table, columnName, columnType)
+	_, err := tx.Exec("ALTER TABLE " + table + " ADD COLUMN " + columnName + " " + columnType)
 	return err
 }
 
-
 func RenameColumn(tx sql.Tx, table string, oldColumnName string, newColumnName string, columnType string) error {
-	statement, err:= tx.Prepare("ALTER TABLE ? CHANGE ? ? ?")
-	if err != nil {
-		return err
-	}
-	defer statement.Close()
-
-	_, err = statement.Exec(table, oldColumnName, newColumnName, columnType)
+	_, err := tx.Exec("ALTER TABLE " + table + " CHANGE COLUMN " + oldColumnName + " " + newColumnName + " " + columnType)
 	return err
 }
 
 func ChangeColumnDataType(tx sql.Tx, table string, columnName string, columnType string) error {
-	statement, err:= tx.Prepare("ALTER TABLE ? ALTER COLUMN ? ?")
-	if err != nil {
-		return err
-	}
-	defer statement.Close()
-
-	_, err = statement.Exec(table, columnName, columnType)
+	_, err := tx.Exec("ALTER TABLE " + table + " ALTER COLUMN " + columnName + " " + columnType)
 	return err
 }
 
