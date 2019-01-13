@@ -3,6 +3,8 @@ package migrations
 import (
 	"context"
 	"database/sql"
+	"errors"
+	"strconv"
 )
 
 type Migration000 struct{}
@@ -51,7 +53,7 @@ func (Migration000) Up(db *sql.DB) error {
 		return err
 	}
 	if err = AddColumn(*tx, nodeTableName, "headerSmallHash", "VARCHAR(50)"); err != nil {
-		return err
+		return errselec
 	}
 	if err = AddColumn(*tx, nodeTableName, "headerMediumHash", "VARCHAR(50)"); err != nil {
 		return err
@@ -65,13 +67,40 @@ func (Migration000) Up(db *sql.DB) error {
 
 	// add new columns into items
 	const itemsTableName = "items"
-	if err = AddColumn(*tx, itemsTableName, "id", "INT NOT NULL"); err != nil {
+	if err = AddColumn(*tx, itemsTableName, "id", "INT"); err != nil {
 		return err
 	}
+
+	var configurationValue sql.NullInt64
+	err = tx.QueryRow("SELECT COUNT(*) from " + itemsTableName).Scan(&configurationValue)
+	if err != nil {
+		return err
+	}
+	if !configurationValue.Valid {
+		return errors.New("result of SELECT COUNT(*) from items isn't valid")
+	}
+
+	for i := 0; i < int(configurationValue.Int64); i++ {
+		err = func() error {
+			stmt, err := tx.Prepare("UPDATE " + itemsTableName + " SET id = ? WHERE id IS NULL LIMIT 1")
+			if err != nil {
+				return err
+			}
+			defer stmt.Close()
+
+			_, err = tx.Stmt(stmt).Exec(i)
+			return err
+		}()
+		if err != nil {
+			return err
+		}
+	}
+
 	if err = ChangePrimaryKey(*tx, itemsTableName, "(id)"); err != nil {
 		return err
 	}
-	if err = ModifyColumn(*tx, itemsTableName, "id", "INT NOT NULL AUTO_INCREMENT"); err != nil {
+	autoIncStart := strconv.FormatInt(configurationValue.Int64, 10)
+	if err = ModifyColumn(*tx, itemsTableName, "id", "INT NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=" + autoIncStart); err != nil {
 		return err
 	}
 
