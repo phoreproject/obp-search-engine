@@ -16,8 +16,8 @@ func RenameColumn(tx sql.Tx, table string, oldColumnName string, newColumnName s
 	return err
 }
 
-func ChangeColumnDataType(tx sql.Tx, table string, columnName string, columnType string) error {
-	_, err := tx.Exec("ALTER TABLE " + table + " ALTER COLUMN " + columnName + " " + columnType)
+func ModifyColumn(tx sql.Tx, table string, columnName string, columnType string) error {
+	_, err := tx.Exec("ALTER TABLE " + table + " MODIFY COLUMN " + columnName + " " + columnType)
 	return err
 }
 

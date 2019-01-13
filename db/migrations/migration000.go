@@ -65,22 +65,32 @@ func (Migration000) Up(db *sql.DB) error {
 
 	// add new columns into items
 	const itemsTableName = "items"
-	if err = AddColumn(*tx, itemsTableName, "id", "INT NOT NULL AUTO_INCREMENT"); err != nil {
+	if err = AddColumn(*tx, itemsTableName, "id", "INT NOT NULL"); err != nil {
 		return err
 	}
 	if err = ChangePrimaryKey(*tx, itemsTableName, "(id)"); err != nil {
 		return err
 	}
+	if err = ModifyColumn(*tx, itemsTableName, "id", "INT NOT NULL AUTO_INCREMENT"); err != nil {
+		return err
+	}
+
+	if err = RenameColumn(*tx, itemsTableName, "owner", "PeerID", "VARCHAR(50)"); err != nil {
+		return err
+	}
+	if err = AddColumn(*tx, itemsTableName, "score", "TINYINT"); err != nil {
+		return err
+	}
 	if err = AddColumn(*tx, itemsTableName, "peerID", "VARCHAR(50)"); err != nil {
 		return err
 	}
-	if err = ChangeColumnDataType(*tx, itemsTableName, "thumbnail", "VARCHAR(260)"); err != nil {
+	if err = ModifyColumn(*tx, itemsTableName, "thumbnail", "VARCHAR(260)"); err != nil {
 		return err
 	}
 	if err = AddColumn(*tx, itemsTableName, "priceModifier", "INT"); err != nil {
 		return err
 	}
-	if err = AddColumn(*tx, itemsTableName, "averageRating", "DECIMAL(2,1)"); err != nil {
+	if err = RenameColumn(*tx, itemsTableName, "rating", "averageRating", "DECIMAL(3,2)"); err != nil {
 		return err
 	}
 	if err = AddColumn(*tx, itemsTableName, "ratingCount", "INT"); err != nil {
