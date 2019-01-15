@@ -53,7 +53,7 @@ func (Migration000) Up(db *sql.DB) error {
 		return err
 	}
 	if err = AddColumn(*tx, nodeTableName, "headerSmallHash", "VARCHAR(50)"); err != nil {
-		return errselec
+		return err
 	}
 	if err = AddColumn(*tx, nodeTableName, "headerMediumHash", "VARCHAR(50)"); err != nil {
 		return err
