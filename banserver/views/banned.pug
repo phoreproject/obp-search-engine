@@ -1,14 +1,7 @@
-extends index.pug
+extends index
 
-block nav
-  li
-    a(href='/unlisted') Unlisted
-  li.active
-    a(href='/banned')
-      | Banned
-      span.sr-only (current)
-  li
-    a(href='/moderators') Moderators
+block link
+    - selected='Banned'
 
 block content
   if nodes && nodes.length > 0

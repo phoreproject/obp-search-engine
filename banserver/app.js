@@ -2,7 +2,8 @@
 const express = require('express'),
     http = require('http'),
     path = require('path'),
-    db = require('./models');
+    db = require('./models'),
+    request = require('request');
 
 const basicAuth = require('express-basic-auth');
 
@@ -82,6 +83,47 @@ app.get('/moderators', (req, res) => {
     db.moderators.findAll().then((ns) => {
         res.render('moderators', {moderators: ns.map((n) => n.toJSON())});
     });
+});
+
+app.get('/statistics', async (req, res) => {
+    const tags = await db.nodes.findAll({
+        group: ['userAgent'],
+        attributes: ['userAgent', [db.sequelize.fn('COUNT', 'userAgent'), 'userAgentCnt']],
+        order: [
+            ['userAgent', 'DESC']
+        ]
+    });
+    request.post("https://rpc.phore.io/rpc",
+        {
+            json: {"jsonrpc": "2.0", "method": 'getblockcount', "params": [], "id": 1}
+        },
+        (err, resp, body) => {
+
+
+            if (err) {
+                res.render('statistics', {tags: tags.map((tag) => tag.toJSON()), err: err});
+            }
+            else if (resp.statusCode !== 200) {
+                res.render('statistics', {tags: tags.map((tag) => tag.toJSON()), err: 'RPC returns status code ' + resp.statusCode});
+            }
+            else {
+                request.post("https://chainz.cryptoid.info/phr/api.dws?q=getblockcount", (errChainz, respChainz, bodyChainz) => {
+                    if (errChainz) {
+                        res.render('statistics', {tags: tags.map((tag) => tag.toJSON()), err: "RPC works (best block is"
+                                + body.result + "), but chainz.cryptoid.info returns error " + err});
+                    }
+                    else if(respChainz.statusCode !== 200) {
+                        res.render('statistics', {tags: tags.map((tag) => tag.toJSON()), err: "RPC works (best block is"
+                                + body.result + "), but chainz.cryptoid.info returns status code " + err});
+                    }
+                    else {
+                        res.render('statistics', {tags: tags.map((tag) => tag.toJSON()),
+                            rpcBlockCount: body.result, chainzBlockCount: parseInt(bodyChainz, 10),
+                            diff: parseInt(bodyChainz, 10) - body.result});
+                    }
+                });
+            }
+        });
 });
 
 app.get('/list/:id', (req, res) => {

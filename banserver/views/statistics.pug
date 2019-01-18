@@ -1,0 +1,28 @@
+extends index.pug
+
+block link
+    - selected='Statistics'
+
+block content
+    table.table.table-bordered.table-striped.main-table
+        thead
+            th User Agent
+            th User Agent Count
+        tbody
+            each tag in tags
+                tr
+                    td #{tag.userAgent}
+                    td #{tag.userAgentCnt}
+    hr
+    h5 RPC status:
+        if err !== undefined
+            a #{err}
+        else
+            a  Newest available RPC block is: #{rpcBlockCount} external service returns #{chainzBlockCount}, diff = #{diff}
+            if diff > 60
+                h3(style=" color: red") RPC best block is at least 60 blocks older than chainz.cryptoid.info. RPC needs urgent control.
+            else if diff > 15
+                h3(style=" color: orange") RPC best block is at least 15 blocks older than chainz.cryptoid.info
+            else
+                div
+                a Everything seems to be ok!

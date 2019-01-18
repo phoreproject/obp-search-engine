@@ -1,14 +1,7 @@
 extends index.pug
 
-block nav
-  li.active
-    a(href='/unlisted')
-      | Unlisted
-      span.sr-only (current)
-  li
-    a(href='/banned') Banned
-  li
-    a(href='/moderators') Moderators
+block link
+    - selected='Unlisted'
 
 block content
   table.table.table-bordered.table-striped.main-table
