@@ -10,6 +10,7 @@ const moment = require('moment');
 // const sequelize = new Sequelize(process.env.DATABASE_URI || 'mysql://' + process.env.RDS_USERNAME + ':' + process.env.RDS_PASSWORD + '@' + process.env.RDS_HOSTNAME + ':' + process.env.RDS_PORT + '/' + process.env.RDS_DB_NAME, {omitNull: true});
 const sequelize = new Sequelize('mysql://user:secret@127.0.0.1:3306/obpsearch', {omitNull: true});
 
+const ConfigCreator = require('./configCreator').ConfigCreator;
 const Item = sequelize.import('./models/item');
 const Node = sequelize.import('./models/node');
 const Moderators = sequelize.import('./models/moderators');
@@ -32,43 +33,48 @@ app.get('/search/listings', async (req, res) => {
         const itemQueryOptions = {};
         const page = req.query.p || 0;
         const ps = Math.min(req.query.ps || 20, 100);
-        const nsfw = req.query.nsfw || false;
-        const orderBy = req.query.sortBy || 'RELEVANCE';
+        const queryNSFW = (req.query.nsfw === 'true') || false;
+        const queryOrderBy = req.query.sortBy || 'RELEVANCE';
+        const queryRating = Number(req.query.rating || "0");
+        const queryModerators = req.query.b2_moderators;
+        const queryContractType = req.query.type;
 
         itemQueryOptions.limit = ps;
         itemQueryOptions.offset = ps * page;
         itemQueryOptions.where = {};
-        itemQueryOptions.where.nsfw = nsfw;
+        itemQueryOptions.where.nsfw = queryNSFW;
 
         // create query to filter by rating
-        if (req.query.rating) {
-            itemQueryOptions.where.rating = {
+        if (queryRating !== 0) {
+            itemQueryOptions.where.averageRating = {
                 [sequelize.Op.gte]: {
                     5: 4.75,
                     4: 4,
                     3: 3,
                     2: 2,
                     1: 0
-                }[Number(req.query.rating)]
+                }[queryRating]
             };
         }
-        itemQueryOptions.order = [[]];
 
+        itemQueryOptions.order = [[]];
         // create query to order by
-        if (orderBy.startsWith('PRICE')) {
+        if (queryOrderBy.startsWith('PRICE')) {
             itemQueryOptions.order[0][0] = 'priceAmount';
-        } else if (orderBy.startsWith('RATING')) {
-            itemQueryOptions.order[0][0] = 'rating';
+        } else if (queryOrderBy.startsWith('RATING')) {
+            itemQueryOptions.order[0][0] = 'averageRating';
+        } else if (queryOrderBy.startsWith('NAME')) {
+            itemQueryOptions.order[0][0] = 'title';
         }
-        if (orderBy.endsWith('DESC')) {
+
+        if (queryOrderBy.endsWith('DESC')) {
             itemQueryOptions.order[0][1] = 'DESC';
-        } else if (orderBy.endsWith('ASC')) {
+        } else if (queryOrderBy.endsWith('ASC')) {
             itemQueryOptions.order[0][1] = 'ASC';
         }
         if (itemQueryOptions.order[0].length === 0) {
             itemQueryOptions.order = undefined;
         }
-        console.log(req.query.q);
 
         // create query to filter by searching name or tag
         if (req.query.q && req.query.q !== '*') {
@@ -90,16 +96,34 @@ app.get('/search/listings', async (req, res) => {
             };
         }
 
+        let nodeQueryWhere = {
+            lastUpdated: {
+                [sequelize.Op.gt]: moment(new Date()).subtract(8, 'hours').toDate()
+            },
+            listed: true,
+            blocked: false
+        };
+
+        // create query to filter nodes by moderator / verified moderator
+        if (queryModerators !== undefined) {
+            if (queryModerators === 'verified_mods') {
+                nodeQueryWhere.verifiedModerator = true;
+            }
+            else if (queryModerators === 'all_mods') {
+                nodeQueryWhere.moderator = true;
+            }
+            // else get all
+        }
+
         itemQueryOptions.include = [{
             model: Node,
-            where: {
-                lastUpdated: {
-                    [sequelize.Op.gt]: moment(new Date()).subtract(8, 'hours').toDate()
-                },
-                listed: true,
-                blocked: false
-            }
+            where: nodeQueryWhere
         }];
+
+
+        if (queryContractType !== undefined && queryContractType !== 'ANY') {
+            itemQueryOptions.where.contractType = queryContractType
+        }
 
         // remove duplicated peerID's
         const itemQueryOutput = await Item.findAndCountAll(itemQueryOptions);
@@ -130,8 +154,17 @@ app.get('/search/listings', async (req, res) => {
             }
         }
 
+        const configuration = new ConfigCreator({
+            selfLink: '/search/listings',
+            nsfwVisible: queryNSFW,
+            itemRating: queryRating,
+            queryModerators: queryModerators,
+            sortBy: queryOrderBy,
+            orderType: queryContractType,
+        });
+
         // create result dictionary
-        const result = Object.assign(config, {
+        const result = Object.assign(configuration.toJSON(), {
             results: {
                 total: itemQueryOutput.count,
                 morePages: itemQueryOutput.count > ps,
@@ -262,6 +295,6 @@ app.get('/verified_moderators', async (req, res) => {
 });
 
 
-app.listen(process.env.PORT || 3000, () => {
+app.listen(process.env.PORT || 80, () => {
     console.log('Listening on port ' + (process.env.PORT || 3000));
 });
