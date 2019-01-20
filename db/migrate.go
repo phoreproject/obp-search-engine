@@ -43,7 +43,7 @@ func Migrate(db *sql.DB) error {
 		if configurationKey.Valid && configurationValue.Valid &&
 			configurationKey.String == migrations.DatabaseVersionKeyName{
 			log.Printf("Found schema version %d\n", configurationValue.Int64)
-			schemaVersionInt := int(configurationValue.Int64)
+			schemaVersionInt = int(configurationValue.Int64)
 			if int64(schemaVersionInt) != configurationValue.Int64 {
 				errMsg := fmt.Sprintf("Var %d overflows maximum int type", configurationValue.Int64)
 				log.Println(errMsg)
