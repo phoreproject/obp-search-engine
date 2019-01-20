@@ -295,7 +295,7 @@ app.get('/verified_moderators', async (req, res) => {
     res.send(result);
 });
 
-
-app.listen(process.env.PORT || 80, () => {
-    console.log('Listening on port ' + (process.env.PORT || 3000));
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+    console.log('Listening on port ' + (port));
 });
