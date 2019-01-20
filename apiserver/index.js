@@ -23,7 +23,6 @@ app.get('/logo.png', (req, res) => {
 });
 
 const config = require('./config');
-
 app.get('/', (req, res) => {
     res.send(config);
 });
@@ -161,6 +160,8 @@ app.get('/search/listings', async (req, res) => {
             queryModerators: queryModerators,
             sortBy: queryOrderBy,
             orderType: queryContractType,
+            condition: undefined, // TODO this information is not available in current db schema and crawler
+            shippingInfo: undefined // TODO this information is not available in current db schema and crawler
         });
 
         // create result dictionary

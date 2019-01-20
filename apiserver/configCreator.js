@@ -1,7 +1,7 @@
 'use strict';
 
 class ConfigCreator {
-    constructor(selfLink, nsfwVisible, itemRating, queryModerators, sortBy, orderType) {
+    constructor(selfLink, nsfwVisible, itemRating, queryModerators, sortBy, orderType, condition, shippingInfo) {
         this.PHORE_WEBSITE = 'localhost';
         if (nsfwVisible === undefined && typeof selfLink === 'object') {
             const dictOfValues = selfLink;
@@ -11,6 +11,8 @@ class ConfigCreator {
             this.queryModerators = dictOfValues['queryModerators'];
             this.sortBy = dictOfValues['sortBy'];
             this.orderType = dictOfValues['orderType'];
+            this.condition = dictOfValues['condition']; // not available now
+            this.shippingInfo = dictOfValues['shippingInfo']; // not available now
         }
         else {
             this.selfLink = selfLink;
@@ -19,6 +21,8 @@ class ConfigCreator {
             this.queryModerators = queryModerators;
             this.sortBy = sortBy;
             this.orderType = orderType;
+            this.condition = condition; // not available now
+            this.shippingInfo = shippingInfo; // not available now
         }
     }
 
@@ -28,7 +32,7 @@ class ConfigCreator {
             'logo': this.PHORE_WEBSITE + 'logo.png',
 
             'links': {
-                'self': this.selfLink,
+                'self':  this.PHORE_WEBSITE + this.selfLink,
                 'listings': this.PHORE_WEBSITE + '/search/listings'
             },
             'options': {
