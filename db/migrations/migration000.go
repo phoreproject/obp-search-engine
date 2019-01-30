@@ -17,6 +17,17 @@ func (Migration000) Up(db *sql.DB) error {
 		return err
 	}
 
+	defer func() {
+		if p := recover(); p != nil {
+			tx.Rollback()
+			panic(p) // re-throw panic after Rollback
+		} else if err != nil {
+			tx.Rollback() // err is non-nil; don't change it
+		} else {
+			err = tx.Commit() // err is nil; if Commit returns error update err
+		}
+	}()
+
 	// add new column into nodes
 	const nodeTableName = "nodes"
 	if err = AddColumn(*tx, nodeTableName, "userAgent", "VARCHAR(50)"); err != nil {
@@ -110,9 +121,6 @@ func (Migration000) Up(db *sql.DB) error {
 	if err = AddColumn(*tx, itemsTableName, "score", "TINYINT"); err != nil {
 		return err
 	}
-	if err = AddColumn(*tx, itemsTableName, "peerID", "VARCHAR(50)"); err != nil {
-		return err
-	}
 	if err = ModifyColumn(*tx, itemsTableName, "thumbnail", "VARCHAR(260)"); err != nil {
 		return err
 	}
@@ -159,5 +167,5 @@ func (Migration000) Up(db *sql.DB) error {
 		return err
 	}
 
-	return tx.Commit()
+	return err
 }
