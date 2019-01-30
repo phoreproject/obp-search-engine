@@ -142,6 +142,15 @@ func (Migration000) Up(db *sql.DB) error {
 	if err = AddColumn(*tx, itemsTableName, "normalizedPrice", "DECIMAL(40, 20) AFTER coinDivisibility"); err != nil {
 		return err
 	}
+	if err = ModifyColumn(*tx, itemsTableName, "categories", "VARCHAR(410) AFTER tags"); err != nil {
+		return err
+	}
+	if err = ModifyColumn(*tx, itemsTableName, "contractType", "VARCHAR(20) AFTER categories"); err != nil {
+		return err
+	}
+	if err = ModifyColumn(*tx, itemsTableName, "description", "TEXT AFTER contractType"); err != nil {
+		return err
+	}
 
 	// add new tables
 	_, err = tx.Exec("CREATE TABLE IF NOT EXISTS moderators (id VARCHAR(50) NOT NULL, type VARCHAR(16), " +
