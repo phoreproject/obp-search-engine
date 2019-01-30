@@ -5,10 +5,9 @@ const fs = require('fs'),
     lodash = require('lodash'),
     db = {};
 
-// const sequelize = new Sequelize(process.env.DATABASE_URI || 'mysql://' + process.env.RDS_USERNAME + ':' + process.env.RDS_PASSWORD + '@' + process.env.RDS_HOSTNAME + ':' + process.env.RDS_PORT + '/' + process.env.RDS_DB_NAME, {
-//     omitNull: true
-// });
-const sequelize = new Sequelize('mysql://user:secret@127.0.0.1:3306/obpsearch', {omitNull: true});
+const sequelize = new Sequelize(process.env.DATABASE_URI || 'mysql://' + process.env.RDS_USERNAME + ':' + process.env.RDS_PASSWORD + '@' + process.env.RDS_HOSTNAME + ':' + process.env.RDS_PORT + '/' + process.env.RDS_DB_NAME, {
+    omitNull: true
+});
 
 fs.readdirSync(__dirname).filter(function (file) {
     return ((file.indexOf('.') !== 0) && (file !== 'index.js') && (file.slice(-3) === '.js'));
