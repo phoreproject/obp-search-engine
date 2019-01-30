@@ -129,7 +129,7 @@ app.get('/statistics', async (req, res) => {
 app.get('/list/:id', (req, res) => {
     db.nodes.find({
         where: {
-            id: req.param('id')
+            id: req.params['id']
         }
     }).then((n) => {
         n.listed = true;
@@ -142,7 +142,7 @@ app.get('/list/:id', (req, res) => {
 app.get('/unlist/:id', (req, res) => {
     db.nodes.find({
         where: {
-            id: req.param('id')
+            id: req.params['id']
         }
     }).then((n) => {
         n.listed = false;
@@ -155,7 +155,7 @@ app.get('/unlist/:id', (req, res) => {
 app.get('/ban/:id', (req, res) => {
     db.nodes.find({
         where: {
-            id: req.param('id')
+            id: req.params['id']
         }
     }).then((n) => {
         n.blocked = true;
@@ -168,7 +168,7 @@ app.get('/ban/:id', (req, res) => {
 app.get('/unban/:id', (req, res) => {
     db.nodes.find({
         where: {
-            id: req.param('id')
+            id: req.params['id']
         }
     }).then((n) => {
         n.blocked = false;
@@ -181,7 +181,7 @@ app.get('/unban/:id', (req, res) => {
 function setIsVerified(req, res, value) {
     db.moderators.find({
         where: {
-            id: req.param('id')
+            id: req.params['id']
         }
     }).then((mod) => {
         mod.isVerified = value;
