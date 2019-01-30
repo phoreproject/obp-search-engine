@@ -38,7 +38,7 @@ func CreateNewDatabaseTables(db *sql.DB) (*SQLDatastore, error) {
 
 	_, err = db.Exec("CREATE TABLE IF NOT EXISTS nodes (userAgent VARCHAR(50), id VARCHAR(50) NOT NULL, lastUpdated DATETIME, " +
 		"name VARCHAR(40), handle VARCHAR(40), location VARCHAR(40), nsfw TINYINT(1), vendor TINYINT(1), moderator TINYINT(1), " +
-		"verifiedModerator TINYINT(1) DEFAULT 0, about VARCHAR(10000), shortDescription VARCHAR(160), followerCount INT, " +
+		"verifiedModerator TINYINT(1), about VARCHAR(10000), shortDescription VARCHAR(160), followerCount INT, " +
 		"followingCount INT, listingCount INT, postCount INT, ratingCount INT, averageRating DECIMAL(3, 2), listed TINYINT(1) DEFAULT 0, " +
 		"blocked TINYINT(1) DEFAULT 0, " +
 		"avatarTinyHash VARCHAR(50), avatarSmallHash VARCHAR(50), avatarMediumHash VARCHAR(50), avatarOriginalHash VARCHAR(50), avatarLargeHash VARCHAR(50), " +

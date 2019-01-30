@@ -33,7 +33,7 @@ func (Migration000) Up(db *sql.DB) error {
 	if err = AddColumn(*tx, nodeTableName, "userAgent", "VARCHAR(50) FIRST"); err != nil {
 		return err
 	}
-	if err = AddColumn(*tx, nodeTableName, "verifiedModerator", "TINYINT(1) DEFAULT 0 AFTER moderator"); err != nil {
+	if err = AddColumn(*tx, nodeTableName, "verifiedModerator", "TINYINT(1) AFTER moderator"); err != nil {
 		return err
 	}
 
