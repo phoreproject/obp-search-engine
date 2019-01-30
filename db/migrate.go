@@ -9,7 +9,7 @@ import (
 )
 
 type Migration interface {
-	Up(db *sql.DB) error
+	Up(db *sql.DB, dbVersion int) error
 }
 
 var Migrations = []Migration{
@@ -55,8 +55,16 @@ func Migrate(db *sql.DB) error {
 		}
 	}
 
+	if schemaVersionInt == len(Migrations) {
+		log.Println("Nothing to do. Database is updated.")
+		return nil
+	} else if schemaVersionInt > len(Migrations) {
+		return errors.New(fmt.Sprintf("Current schema version is higher (%d) than code version (%d)", schemaVersionInt, len(Migrations)))
+	}
+
+
 	for i := schemaVersionInt; i < len(Migrations); i++ {
-		err := Migrations[i].Up(db)
+		err := Migrations[i].Up(db, i+1)
 		if err != nil {
 			log.Printf("Cannot migrate db, because of error: %s", err)
 			return err

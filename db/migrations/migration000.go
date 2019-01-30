@@ -9,7 +9,7 @@ import (
 
 type Migration000 struct{}
 
-func (Migration000) Up(db *sql.DB) error {
+func (Migration000) Up(db *sql.DB, dbVersion int) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	tx, err := db.BeginTx(ctx, nil)
@@ -165,13 +165,13 @@ func (Migration000) Up(db *sql.DB) error {
 		return err
 	}
 
-	stmt, err := tx.Prepare("UPDATE configuration SET value = ? WHERE uniqueKey = ?")
+	stmt, err := tx.Prepare("INSERT INTO configuration (uniqueKey, value) VALUES(?, ?) ON DUPLICATE KEY UPDATE value=?")
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(1, DatabaseVersionKeyName)
+	_, err = stmt.Exec(DatabaseVersionKeyName, dbVersion, dbVersion)
 	if err != nil {
 		return err
 	}
