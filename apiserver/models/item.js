@@ -1,13 +1,17 @@
-module.exports = function(sequelize, DataTypes){
+module.exports = function (sequelize, DataTypes) {
     return sequelize.define('items', {
+        id: {
+            type: DataTypes.INTEGER,
+            primaryKey: true,
+            unique: true,
+            allowNull: false,
+        },
         peerID: DataTypes.STRING(50),
+        score: DataTypes.TINYINT,
         hash: {
             type: DataTypes.STRING(50),
             allowNull: false,
-            unique: false,
-            primaryKey: true
         },
-        score: DataTypes.INTEGER,
         slug: DataTypes.STRING(70),
         title: DataTypes.STRING(140),
         tags: DataTypes.STRING(410),
@@ -23,12 +27,12 @@ module.exports = function(sequelize, DataTypes){
         priceModifier: DataTypes.INTEGER,
 
         nsfw: DataTypes.BOOLEAN,
-        averageRating: DataTypes.INTEGER,
+        averageRating: DataTypes.DECIMAL(3, 2),
         ratingCount: DataTypes.INTEGER,
 
         coinType: DataTypes.STRING(20),
         coinDivisibility: DataTypes.INTEGER,
-        normalizedPrice: DataTypes.DOUBLE,
+        normalizedPrice: DataTypes.DECIMAL(40, 20),
     }, {
         freezeTableName: true,
         timestamps: false

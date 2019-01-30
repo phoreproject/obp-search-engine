@@ -1,14 +1,13 @@
 module.exports = function(sequelize, DataTypes){
     return sequelize.define('nodes', {
+        userAgent: DataTypes.STRING(50),
         id: {
             type: DataTypes.STRING(50),
             allowNull: false,
-            unique: false,
+            unique: true,
             primaryKey: true
         },
-        userAgent: DataTypes.STRING(40),
         lastUpdated: DataTypes.DATE,
-        blocked: DataTypes.BOOLEAN,
         name: DataTypes.STRING(40),
         handle: DataTypes.STRING(40),
         location: DataTypes.STRING(40),
@@ -18,6 +17,22 @@ module.exports = function(sequelize, DataTypes){
         verifiedModerator: DataTypes.BOOLEAN,
         about: DataTypes.STRING(10000),
         shortDescription: DataTypes.STRING(160),
+
+        //stats
+        followerCount: DataTypes.INTEGER,
+        followingCount: DataTypes.INTEGER,
+        listingCount: DataTypes.INTEGER,
+        postCount: DataTypes.INTEGER,
+        ratingCount: DataTypes.INTEGER,
+        averageRating: DataTypes.DECIMAL(3, 2),
+        listed: {
+            type:DataTypes.BOOLEAN,
+            defaultValue: 0,
+        },
+        blocked: {
+            type:DataTypes.BOOLEAN,
+            defaultValue: 0,
+        },
 
         //avatar hashes
         avatarTinyHash: DataTypes.STRING(50),
@@ -32,16 +47,6 @@ module.exports = function(sequelize, DataTypes){
         headerMediumHash: DataTypes.STRING(50),
         headerOriginalHash: DataTypes.STRING(50),
         headerLargeHash: DataTypes.STRING(50),
-
-        //stats
-        followerCount: DataTypes.INTEGER,
-        followingCount: DataTypes.INTEGER,
-        listingCount: DataTypes.INTEGER,
-        postCount: DataTypes.INTEGER,
-        ratingCount: DataTypes.INTEGER,
-        averageRating: DataTypes.DECIMAL(3, 2),
-
-        listed: DataTypes.BOOLEAN,
     }, {
         freezeTableName: true,
         timestamps: false
