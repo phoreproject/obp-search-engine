@@ -30,10 +30,10 @@ func (Migration000) Up(db *sql.DB) error {
 
 	// add new column into nodes
 	const nodeTableName = "nodes"
-	if err = AddColumn(*tx, nodeTableName, "userAgent", "VARCHAR(50)"); err != nil {
+	if err = AddColumn(*tx, nodeTableName, "userAgent", "VARCHAR(50) FIRST"); err != nil {
 		return err
 	}
-	if err = AddColumn(*tx, nodeTableName, "verifiedModerator", "TINYINT(1) DEFAULT 0"); err != nil {
+	if err = AddColumn(*tx, nodeTableName, "verifiedModerator", "TINYINT(1) DEFAULT 0 AFTER moderator"); err != nil {
 		return err
 	}
 
@@ -78,7 +78,7 @@ func (Migration000) Up(db *sql.DB) error {
 
 	// add new columns into items
 	const itemsTableName = "items"
-	if err = AddColumn(*tx, itemsTableName, "id", "INT"); err != nil {
+	if err = AddColumn(*tx, itemsTableName, "id", "INT FIRST"); err != nil {
 		return err
 	}
 
@@ -115,31 +115,31 @@ func (Migration000) Up(db *sql.DB) error {
 		return err
 	}
 
-	if err = RenameColumn(*tx, itemsTableName, "owner", "PeerID", "VARCHAR(50)"); err != nil {
+	if err = RenameColumn(*tx, itemsTableName, "owner", "peerID", "VARCHAR(50)"); err != nil {
 		return err
 	}
-	if err = AddColumn(*tx, itemsTableName, "score", "TINYINT"); err != nil {
+	if err = AddColumn(*tx, itemsTableName, "score", "TINYINT AFTER peerID"); err != nil {
 		return err
 	}
 	if err = ModifyColumn(*tx, itemsTableName, "thumbnail", "VARCHAR(260)"); err != nil {
 		return err
 	}
-	if err = AddColumn(*tx, itemsTableName, "priceModifier", "INT"); err != nil {
+	if err = AddColumn(*tx, itemsTableName, "priceModifier", "INT AFTER priceCurrency"); err != nil {
 		return err
 	}
 	if err = RenameColumn(*tx, itemsTableName, "rating", "averageRating", "DECIMAL(3,2)"); err != nil {
 		return err
 	}
-	if err = AddColumn(*tx, itemsTableName, "ratingCount", "INT"); err != nil {
+	if err = AddColumn(*tx, itemsTableName, "ratingCount", "INT AFTER averageRating"); err != nil {
 		return err
 	}
-	if err = AddColumn(*tx, itemsTableName, "coinType", "VARCHAR(20)"); err != nil {
+	if err = AddColumn(*tx, itemsTableName, "coinType", "VARCHAR(20) AFTER ratingCount"); err != nil {
 		return err
 	}
-	if err = AddColumn(*tx, itemsTableName, "coinDivisibility", "INT"); err != nil {
+	if err = AddColumn(*tx, itemsTableName, "coinDivisibility", "INT AFTER coinType"); err != nil {
 		return err
 	}
-	if err = AddColumn(*tx, itemsTableName, "normalizedPrice", "DECIMAL(40, 20)"); err != nil {
+	if err = AddColumn(*tx, itemsTableName, "normalizedPrice", "DECIMAL(40, 20) AFTER coinDivisibility"); err != nil {
 		return err
 	}
 
