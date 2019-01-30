@@ -17,6 +17,7 @@ func main() {
 	// url format is user:password@protocol(address:port)/db_name
 	databaseURL := flag.String("mysql", "root:secret@tcp(127.0.0.1:3306)/obpsearch", "database url used to connect to MySQL database")
 	rpcURL := flag.String("rpc", "127.0.0.1:5002", "rpc url used to connect to Phore Marketplace")
+	skipMigration := flag.Bool("skipMigration", false, "skip database migration to the newest version on start")
 	flag.Parse()
 
 	database, err := sql.Open("mysql", *databaseURL+"?parseTime=true&interpolateParams=true")
@@ -24,7 +25,7 @@ func main() {
 		panic(err)
 	}
 
-	d, err := db.NewSQLDatastore(database, true)
+	d, err := db.NewSQLDatastore(database, !(*skipMigration))
 	if err != nil {
 		panic(err)
 	}
