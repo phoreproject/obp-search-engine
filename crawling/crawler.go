@@ -36,7 +36,7 @@ func (c Crawler) CrawlOnce() (string, error) {
 		return "", err
 	}
 
-	userAgent, err := c.RPCInterface.GetUserAgent(nextNode.ID)
+	userAgent, err := c.RPCInterface.GetUserAgentFromIPNS(nextNode.ID)
 	if err != nil {
 		return "", err
 	}

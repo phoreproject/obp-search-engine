@@ -148,5 +148,5 @@ type RPCInterface interface {
 	GetConnections(string) ([]string, error)
 	GetItems(id string) ([]Item, error)
 	GetProfile(id string) (*ProfileResponse, error)
-	GetUserAgent(id string) (string, error)
+	GetUserAgentFromIPNS(id string) (string, error)
 }

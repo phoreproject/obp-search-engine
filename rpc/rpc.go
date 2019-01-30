@@ -148,8 +148,8 @@ func (r OpenBazaarRPC) GetProfile(id string) (*crawling.ProfileResponse, error) 
 	return &response, nil
 }
 
-// GetUserAgent gets the user agent of a specific node
-func (r OpenBazaarRPC) GetUserAgent(id string) (string, error) {
+// GetUserAgentFromIPNS gets the user agent of a specific node
+func (r OpenBazaarRPC) GetUserAgentFromIPNS(id string) (string, error) {
 	req, err := http.NewRequest("GET", "http://"+path.Join(r.URL, "ipns", id, "user_agent"), nil)
 	if err != nil {
 		return "", err

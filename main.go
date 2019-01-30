@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -45,7 +46,7 @@ func main() {
 		panic(err)
 	}
 
-	userAgent, err := c.RPCInterface.GetUserAgent(config.PeerID)
+	userAgent, err := c.RPCInterface.GetUserAgentFromIPNS(config.PeerID)
 	if err != nil {
 		panic(err)
 	}
@@ -68,10 +69,10 @@ func main() {
 
 			fmt.Printf("Crawling %s\n", nodeID)
 
-			_, err = c.RPCInterface.GetUserAgent(nodeID)
-			if err != nil {
+			userAgent, err = c.RPCInterface.GetUserAgentFromIPNS(nodeID)
+			if err != nil || strings.Contains(userAgent, nodeID) {
 				done <- true
-				fmt.Printf("Could not access node %s. ignoring\n", nodeID)
+				fmt.Printf("Could not access node %s. ignoring\n. IPNS returned: %s", nodeID, userAgent)
 				return
 			}
 

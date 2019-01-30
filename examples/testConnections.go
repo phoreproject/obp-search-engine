@@ -2,12 +2,14 @@ package main
 
 import (
 	"database/sql"
+	"errors"
 	"flag"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/phoreproject/obp-search-engine/crawling"
 	"github.com/phoreproject/obp-search-engine/db"
 	"github.com/phoreproject/obp-search-engine/rpc"
+	"strings"
 	"time"
 )
 
@@ -49,7 +51,7 @@ func testInterface() {
 	fmt.Printf("%+v\n", profile)
 
 	fmt.Println("Get User Agent")
-	userAgent, err := r.GetUserAgent(peerId)
+	userAgent, err := r.GetUserAgentFromIPNS(peerId)
 	fmt.Println("Print user agent")
 	fmt.Printf("%+v\n", userAgent)
 }
@@ -79,8 +81,12 @@ func testDB() {
 	connections, err := r.GetConnections(peerId)
 	fmt.Println("Downloading profile information")
 	profile, err := r.GetProfile(peerId)
-	fmt.Println("Downloading user agent")
-	userAgent, err := r.GetUserAgent(peerId)
+	fmt.Println("Downloading user agent from IPNS network")
+	userAgent, err := r.GetUserAgentFromIPNS(peerId)
+
+	if strings.Contains(userAgent, peerId) {
+		panic(errors.New(userAgent))
+	}
 
 	node := crawling.Node{peerId, userAgent, connections, time.Now(), profile}
 	fmt.Println("Saving node into db")

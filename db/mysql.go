@@ -97,13 +97,13 @@ func (d *SQLDatastore) SaveNodeUninitialized(n crawling.Node) error {
 		return err
 	}
 
-	insertStatement, err := tx.Prepare("INSERT INTO nodes (id, lastUpdated, userAgent) VALUES (?, ?, NOW()) ON DUPLICATE KEY UPDATE lastUpdated=NOW(), userAgent=?")
+	insertStatement, err := tx.Prepare("INSERT INTO nodes (id, lastUpdated, userAgent) VALUES (?, NOW(), ?) ON DUPLICATE KEY UPDATE lastUpdated=NOW(), userAgent=?")
 	if err != nil {
 		return err
 	}
 	defer insertStatement.Close()
 
-	_, err = tx.Stmt(insertStatement).Exec(n.ID, n.UserAgent)
+	_, err = tx.Stmt(insertStatement).Exec(n.ID, n.UserAgent, n.UserAgent)
 	if err != nil {
 		return err
 	}
