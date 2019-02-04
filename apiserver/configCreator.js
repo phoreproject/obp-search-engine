@@ -2,7 +2,7 @@
 
 class ConfigCreator {
     constructor(selfLink, nsfwVisible, itemRating, queryModerators, sortBy, orderType, condition, shippingInfo) {
-        this.PHORE_WEBSITE = 'localhost';
+        this.PHORE_WEBSITE = 'http://search.phore.io/';
         if (nsfwVisible === undefined && typeof selfLink === 'object') {
             const dictOfValues = selfLink;
             this.selfLink = dictOfValues['selfLink'];
