@@ -29,6 +29,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(cookieParser());
 app.use(csrfProtection);
 
+// tables dependencies
+db.moderators.belongsToMany(db.nodes, {through: 'moderatorIdsPerItem', foreignKey: 'moderatorID', targetKey: 'id', otherKey: 'peerID'});
+db.nodes.belongsToMany(db.moderators, {through: 'moderatorIdsPerItem', foreignKey: 'peerID', targetKey: 'id', otherKey: 'moderatorID'});
+
 // development only
 if ('development' === app.get('env')) {
     var errorHandler = require('errorhandler');
@@ -178,16 +182,29 @@ app.get('/unban/:id', (req, res) => {
     });
 });
 
-function setIsVerified(req, res, value) {
-    db.moderators.find({
-        where: {
-            id: req.params['id']
-        }
-    }).then((mod) => {
-        mod.isVerified = value;
-        return mod.save();
-    }).then(() => {
-        res.redirect('/moderators')
+async function setIsVerified(req, res, value) {
+    db.sequelize.transaction({}, async (transaction) => {
+        let moderator = await db.moderators.find({
+            where: {
+                id: req.params['id']
+            },
+            transaction: transaction,
+        });
+        moderator.isVerified = value;
+        await moderator.save();
+
+        let nodes = await db.nodes.findAll({
+            include:[
+                {
+                    model: db.moderators,
+                }
+            ],
+            transaction: transaction,
+        });
+
+        //TODO update nodes
+
+        res.redirect('/moderators');
     });
 }
 
