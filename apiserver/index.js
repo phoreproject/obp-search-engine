@@ -215,7 +215,7 @@ app.get('/search/listings', async (req, res) => {
                                 listingCount: r.node.listingCount,
                                 postCount: r.node.postCount,
                                 ratingCount: r.node.ratingCount,
-                                averageRating: r.node.averageRating,
+                                averageRating: parseFloat(r.node.averageRating),
                             }
                         }
                     },
@@ -244,7 +244,7 @@ app.get('/search/listings', async (req, res) => {
                         modifier: r.priceModifier
                     },
                     nsfw: r.nsfw,
-                    averageRating: r.averageRating,
+                    averageRating: parseFloat(r.averageRating),
                     ratingCount: r.ratingCount,
                     coinType: r.coinType,
                     coinDivisibility: r.coinDivisibility,
