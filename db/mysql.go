@@ -64,7 +64,7 @@ func CreateNewDatabaseTables(db *sql.DB) (*SQLDatastore, error) {
 	}
 
 	_, err = db.Exec("CREATE TABLE IF NOT EXISTS moderatorIdsPerItem (peerID VARCHAR(50) NOT NULL, " +
-		"itemDataBaseID INT NOT NULL, moderatorID VARCHAR(50) NOT NULL, PRIMARY KEY(peerID, itemDataBaseID, moderatorID))")
+		"moderatorID VARCHAR(50) NOT NULL, PRIMARY KEY(peerID, moderatorID))")
 	if err != nil {
 		return nil, err
 	}
@@ -351,19 +351,14 @@ func (d *SQLDatastore) AddItemsForNode(peerID string, items []crawling.Item) err
 			}
 
 			if items[i].ModeratorIDs != nil && len(items[i].ModeratorIDs) > 0 {
-				lastInsertedItemId, err := ret.LastInsertId()
-				if err != nil {
-					return err
-				}
-
-				insertIntoModerators, err := tx.Prepare("INSERT INTO moderatorIdsPerItem (peerID, itemDataBaseID, moderatorID) VALUES(?, ?, ?)")
+				insertIntoModerators, err := tx.Prepare("INSERT INTO moderatorIdsPerItem (peerID, moderatorID) VALUES(?, ?) ON DUPLICATE KEY UPDATE peerID=?, moderatorID=?")
 				if err != nil {
 					return err
 				}
 				defer insertIntoModerators.Close()
 
 				for moderatorID := range items[i].ModeratorIDs {
-					_, err = insertIntoModerators.Exec(peerID, lastInsertedItemId, moderatorID)
+					_, err = insertIntoModerators.Exec(peerID, moderatorID, peerID, moderatorID)
 					if err != nil {
 						return err
 					}

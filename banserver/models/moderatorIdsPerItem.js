@@ -6,12 +6,6 @@ module.exports = function (sequelize, DataTypes) {
                 unique: true,
                 primaryKey: true
             },
-            itemDataBaseID: {
-                type: DataTypes.INTEGER,
-                allowNull: false,
-                unique: true,
-                primaryKey: true
-            },
             moderatorID: {
                 type: DataTypes.STRING(50),
                 allowNull: false,

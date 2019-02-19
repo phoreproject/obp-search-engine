@@ -21,7 +21,18 @@ func ModifyColumn(tx sql.Tx, table string, columnName string, columnType string)
 	return err
 }
 
+func DeleteColumn(tx sql.Tx, table string, columnName string) error {
+	_, err := tx.Exec("ALTER TABLE " + table + " DROP COLUMN " + columnName)
+	return err
+}
+
+
 func ChangePrimaryKey(tx sql.Tx, table string, primaryKeyString string) error {
 	_, err := tx.Exec("ALTER TABLE " + table + " DROP PRIMARY KEY, ADD PRIMARY KEY " + primaryKeyString)
+	return err
+}
+
+func RenameTable(tx sql.Tx, oldTableName string, newTableName string) error {
+	_, err := tx.Exec("ALTER TABLE " + oldTableName + " RENAME " + newTableName)
 	return err
 }
