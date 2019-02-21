@@ -190,20 +190,59 @@ async function setIsVerified(req, res, value) {
             },
             transaction: transaction,
         });
-        moderator.isVerified = value;
-        await moderator.save();
 
         let nodes = await db.nodes.findAll({
             include:[
                 {
                     model: db.moderators,
+                    where: {
+                        id: req.params['id']
+                    }
                 }
             ],
             transaction: transaction,
         });
 
-        //TODO update nodes
+        if (value) {
+            for (let i = 0; i < nodes.length; i++) {
+                await nodes[i].update({
+                    moderator: true,
+                    verifiedModerator: true,
+                }, {
+                    transaction: transaction,
+                });
+            }
+        }
+        else {
+            for (let i = 0; i < nodes.length; i++) {
+                let mods = await db.moderators.findAll({
+                    include: [
+                        {
+                            model: db.nodes,
+                            where: {
+                                id: nodes[i].id
+                            }
+                        }
+                    ],
+                    where: { isVerified: true },
+                    transaction: transaction
+                });
 
+                if (mods.length === 0) { // no more verified moderators for that node
+                    nodes[i].update({
+                        verifiedModerator: false
+                    }, {
+                        transaction: transaction
+                    })
+                }
+            }
+        }
+
+        await moderator.update({
+            isVerified: value
+        }, {
+            transaction: transaction
+        });
         res.redirect('/moderators');
     });
 }
