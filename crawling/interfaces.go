@@ -149,4 +149,5 @@ type RPCInterface interface {
 	GetItems(id string) ([]Item, error)
 	GetProfile(id string) (*ProfileResponse, error)
 	GetUserAgentFromIPNS(id string) (string, error)
+	GetOneItem(guid string, slug string) (*Item, error)
 }

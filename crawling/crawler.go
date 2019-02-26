@@ -2,6 +2,7 @@ package crawling
 
 import (
 	"fmt"
+	"strings"
 	"time"
 )
 
@@ -37,13 +38,13 @@ func (c Crawler) CrawlOnce() (string, error) {
 	}
 
 	userAgent, err := c.RPCInterface.GetUserAgentFromIPNS(nextNode.ID)
-	if err != nil {
+	if err != nil || strings.Contains(userAgent, nextNode.ID) {
+		fmt.Printf("Could not access node %s. ignoring\n. IPNS returned: %s", nextNode.ID, userAgent)
 		return "", err
 	}
 	nextNode.UserAgent = userAgent
 
 	profile, err := c.RPCInterface.GetProfile(nextNode.ID)
-
 	if profile != nil && profile.Stats != nil {
 		nextNode.Profile = profile
 

@@ -171,3 +171,33 @@ func (r OpenBazaarRPC) GetUserAgentFromIPNS(id string) (string, error) {
 
 	return responseRaw.String(), nil
 }
+
+func (r OpenBazaarRPC) GetOneItem(guid string, slug string) (*crawling.Item, error) {
+	req, err := http.NewRequest("GET", "http://"+path.Join(r.URL, "ob", "listings", guid, slug), nil)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := r.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	responseRaw := new(bytes.Buffer)
+	byteCount, err := responseRaw.ReadFrom(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if byteCount == 0 {
+		return nil, nil // fail silently
+	}
+
+	var response crawling.Item
+	if err := json.Unmarshal(responseRaw.Bytes(), &response); err != nil {
+		var possibleError ErrorResponse
+		if err := json.Unmarshal(responseRaw.Bytes(), &possibleError); err == nil {
+			return &crawling.Item{}, nil
+		}
+		return nil, err
+	}
+	return &response, nil
+}
