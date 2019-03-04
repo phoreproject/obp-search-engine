@@ -36,24 +36,6 @@ class ConfigCreator {
                 'listings': this.PHORE_WEBSITE + '/search/listings'
             },
             'options': {
-                'nsfw':{
-                    'type':'radio',
-                    'label':'Adult Content',
-                    'options':[
-                        {
-                            'value':'true',
-                            'label':'Visible',
-                            'checked': this.nsfwVisible === true,
-                            'default':false
-                        },
-                        {
-                            'value':'false',
-                            'label':'Hidden',
-                            'checked': this.nsfwVisible !== true,
-                            'default':true
-                        }
-                    ]
-                },
                 'rating': {
                     'type': 'radio',
                     'label': 'Rating',
@@ -153,6 +135,24 @@ class ConfigCreator {
                             "label":"Services",
                             "checked":this.orderType === 'SERVICE',
                             "default":false
+                        }
+                    ]
+                },
+                'nsfw':{
+                    'type':'radio',
+                    'label':'Adult Content',
+                    'options':[
+                        {
+                            'value':'true',
+                            'label':'Visible',
+                            'checked': this.nsfwVisible === true,
+                            'default':false
+                        },
+                        {
+                            'value':'false',
+                            'label':'Hidden',
+                            'checked': this.nsfwVisible !== true,
+                            'default':true
                         }
                     ]
                 },
