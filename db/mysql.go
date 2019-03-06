@@ -303,7 +303,7 @@ func (d *SQLDatastore) AddItemsForNode(peerID string, items []crawling.Item) err
 			}
 			defer insertIntoItems.Close()
 
-			ret, err := insertIntoItems.Exec(
+			_, err = insertIntoItems.Exec(
 				peerID,
 				items[i].Hash,
 
