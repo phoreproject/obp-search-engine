@@ -51,7 +51,7 @@ func (c Crawler) CrawlNode(nextNodeID string) error {
 			return err
 		}
 	} else {
-		fmt.Printf("Svaing empty node %s...\n", nextNode.ID)
+		fmt.Printf("Saving empty node %s...\n", nextNode.ID)
 		if err := c.DB.SaveNodeUninitialized(nextNode); err != nil {
 			return err
 		}
