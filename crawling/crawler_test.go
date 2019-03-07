@@ -11,7 +11,7 @@ import (
 func TestCrawlingDBFail(t *testing.T) {
 	c := crawling.Crawler{DB: &mock.MockDB{}, RPCInterface: mock.MockRPC{}}
 
-	err := c.CrawlOnce()
+	err := c.CrawlNode()
 
 	if err == nil {
 		t.Error(errors.New("Did not error with empty DB."))
@@ -25,7 +25,7 @@ func TestCrawling(t *testing.T) {
 
 	c.DB.SaveNode(crawling.Node{ID: "1", Connections: []string{}})
 
-	err := c.CrawlOnce()
+	err := c.CrawlNode()
 
 	if err != nil {
 		t.Error(err)

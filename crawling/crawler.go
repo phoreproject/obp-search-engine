@@ -1,6 +1,7 @@
 package crawling
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -13,17 +14,13 @@ type Crawler struct {
 	WorkerQueue  chan chan Node
 }
 
-// CrawlOnce runs the crawler for one step
-func (c Crawler) CrawlOnce() (string, error) {
-	nextNode, err := c.DB.GetNextNode()
-	if err != nil {
-		return "", err
-	}
-	nextNode.LastCrawled = time.Now()
+// CrawlNode runs the crawler for one step
+func (c Crawler) CrawlNode(nextNodeID string) error {
+	nextNode := Node{ID: nextNodeID, LastCrawled: time.Now()}
 
 	connections, err := c.RPCInterface.GetConnections(nextNode.ID)
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	nodes := []Node{}
@@ -34,13 +31,14 @@ func (c Crawler) CrawlOnce() (string, error) {
 	}
 	nextNode.Connections = connections
 	if err := c.DB.AddUninitializedNodes(nodes); err != nil {
-		return "", err
+		return err
 	}
 
 	userAgent, err := c.RPCInterface.GetUserAgentFromIPNS(nextNode.ID)
-	if err != nil || strings.Contains(userAgent, nextNode.ID) {
-		fmt.Printf("Could not access node %s. Ignoring.\n  IPNS returned: %s", nextNode.ID, userAgent)
-		return "", err
+	if err != nil {
+		return err
+	} else if strings.Contains(userAgent, nextNode.ID) { // marketplace returns
+		return errors.New(fmt.Sprintf("Could not access node %s. Ignoring.\n  IPNS returned: %s", nextNode.ID, userAgent))
 	}
 	nextNode.UserAgent = userAgent
 
@@ -48,17 +46,15 @@ func (c Crawler) CrawlOnce() (string, error) {
 	if profile != nil && profile.Stats != nil {
 		nextNode.Profile = profile
 
-		fmt.Println("saving...")
-
-		if err := c.DB.SaveNode(*nextNode); err != nil {
-			fmt.Println(err)
+		fmt.Printf("Saving node %s...\n", nextNode.ID)
+		if err := c.DB.SaveNode(nextNode); err != nil {
+			return err
 		}
 	} else {
-		fmt.Println("saving empty...")
-
-		if err := c.DB.SaveNodeUninitialized(*nextNode); err != nil {
-			fmt.Println(err)
+		fmt.Printf("Svaing empty node %s...\n", nextNode.ID)
+		if err := c.DB.SaveNodeUninitialized(nextNode); err != nil {
+			return err
 		}
 	}
-	return nextNode.ID, nil
+	return nil
 }

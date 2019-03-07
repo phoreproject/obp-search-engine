@@ -7,6 +7,7 @@ import (
 // Datastore represents a way of storing crawled data.
 type Datastore interface {
 	GetNextNode() (*Node, error)
+	GetNextNodesChan(from string, maxSize int) (<-chan string, error)
 	SaveNode(Node) error
 	AddUninitializedNodes([]Node) error
 	GetNode(string) (*Node, error)

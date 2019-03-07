@@ -8,7 +8,6 @@ import (
 
 	"github.com/phoreproject/obp-search-engine/crawling"
 	"github.com/phoreproject/obp-search-engine/db/migrations"
-
 )
 
 // start mysql container
@@ -88,6 +87,37 @@ func (d *SQLDatastore) GetNextNode() (*crawling.Node, error) {
 		return nil, err
 	}
 	return &node, nil
+}
+
+// GetNextNodesChan gets up to maxSize nodes ids and return them in the chan
+func (d *SQLDatastore) GetNextNodesChan(from string, maxSize int) (<-chan string, error) {
+	selectStatement, err := d.db.Prepare("SELECT id FROM nodes WHERE id > ? ORDER BY id ASC LIMIT ?")
+	if err != nil {
+		return nil, err
+	}
+	defer selectStatement.Close()
+
+	rows, err := selectStatement.Query(from, maxSize)
+	if err != nil {
+		return nil, err
+	}
+
+	chnl := make(chan string)
+	go func() {
+		defer close(chnl)
+		defer rows.Close()
+
+		for rows.Next() {
+			var nodeID string
+			err := rows.Scan(&nodeID)
+			if err != nil {
+				return
+			}
+			chnl <- nodeID
+		}
+	}()
+
+	return chnl, nil
 }
 
 // SaveNodeUninitialized saves a node to the database without extra data
