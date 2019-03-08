@@ -1,6 +1,6 @@
 {
   "name": "apiserver",
-  "version": "1.0.0",
+  "version": "1.5.0",
   "description": "Serves a basic OpenBazaar search engine",
   "main": "index.js",
   "scripts": {
