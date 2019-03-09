@@ -33,6 +33,8 @@ func main() {
 	rpcURL := flag.String("rpc", "127.0.0.1:5002", "rpc url used to connect to Phore Marketplace")
 	skipMigration := flag.Bool("skipMigration", false, "skip database migration to the newest version on start")
 	verbose := flag.Bool("verbose", false, "use more verbose logging")
+	chunkSize := flag.Int("chunkSize", 100, "Maximum database select chunk size")
+	maxParallelCorutine := flag.Int("maxCoroutine", 10, "Maximum number of parallel connections")
 	flag.Parse()
 
 	if *verbose {
@@ -40,9 +42,7 @@ func main() {
 		log.Info("Using verbose logging!")
 	}
 
-	CHUNK_SIZE := 100
-	MAX_PARALLEL_COROUTINE := 10
-	log.Debugf("Starting app with chunk size %d, and max parallel corutine cnt %d", CHUNK_SIZE, MAX_PARALLEL_COROUTINE)
+	log.Debugf("Starting app with chunk size %d, and max parallel corutine cnt %d", chunkSize, maxParallelCorutine)
 
 	database, err := sql.Open("mysql", *databaseURL+"?parseTime=true&interpolateParams=true")
 	if err != nil {
@@ -87,7 +87,7 @@ func main() {
 			lastNodeID := ""
 			for {
 				// get next chunk of nodes from database
-				nodesIDs, err := c.DB.GetNextNodesChan(lastNodeID, CHUNK_SIZE)
+				nodesIDs, err := c.DB.GetNextNodesChan(lastNodeID, *chunkSize)
 				if err != nil {
 					done <- true
 					return
@@ -100,7 +100,7 @@ func main() {
 					// create list of at max MAX_PARALLEL_COROUTINE nodes to start parallel coroutines
 					var lastNodes []string
 					lastNodes = append(lastNodes, nodeID)
-					nodesLen := MAX_PARALLEL_COROUTINE - 1
+					nodesLen := *maxParallelCorutine - 1
 					for nodeID = range nodesIDs {
 						lastNodes = append(lastNodes, nodeID)
 						nodesLen--
