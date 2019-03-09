@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"path"
 	"github.com/phoreproject/obp-search-engine/crawling"
+	"time"
 )
 
 // ConfigResponse is the response from the /ob/config RPC command
@@ -34,7 +35,7 @@ type OpenBazaarRPC struct {
 
 // NewRPC creates a new instance of an RPC interface
 func NewRPC(url string) OpenBazaarRPC {
-	c := &http.Client{}
+	c := &http.Client{Timeout: time.Second * 60}
 	return OpenBazaarRPC{URL: url, client: c}
 }
 
