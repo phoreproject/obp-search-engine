@@ -3,7 +3,7 @@ package db
 import (
 	"context"
 	"database/sql"
-	"fmt"
+	log "github.com/sirupsen/logrus"
 	"strings"
 
 	"github.com/phoreproject/obp-search-engine/crawling"
@@ -127,6 +127,17 @@ func (d *SQLDatastore) SaveNodeUninitialized(n crawling.Node) error {
 		return err
 	}
 
+	defer func() {
+		if p := recover(); p != nil {
+			tx.Rollback()
+			log.Panic(p)
+		} else if err != nil {
+			tx.Rollback() // err is non-nil; don't change it
+		} else {
+			err = tx.Commit() // err is nil; if Commit returns error update err
+		}
+	}()
+
 	insertStatement, err := tx.Prepare("INSERT INTO nodes (id, lastUpdated, userAgent) VALUES (?, NOW(), ?) ON DUPLICATE KEY UPDATE lastUpdated=NOW(), userAgent=?")
 	if err != nil {
 		return err
@@ -134,10 +145,6 @@ func (d *SQLDatastore) SaveNodeUninitialized(n crawling.Node) error {
 	defer insertStatement.Close()
 
 	_, err = tx.Stmt(insertStatement).Exec(n.ID, n.UserAgent, n.UserAgent)
-	if err != nil {
-		return err
-	}
-	err = tx.Commit()
 	return err
 }
 
@@ -147,6 +154,16 @@ func (d *SQLDatastore) SaveNode(n crawling.Node) error {
 	if err != nil {
 		return err
 	}
+
+	defer func() {
+		if p := recover(); p != nil {
+			tx.Rollback()
+			log.Panic(p)
+		} else if err != nil {
+			tx.Rollback() // err is non-nil; don't change it
+		}
+	}()
+
 	insertStatement, err := tx.Prepare("INSERT INTO nodes (id, lastUpdated, userAgent, name, handle, location, nsfw, vendor, " +
 		"moderator, about, shortDescription, followerCount, followingCount, listingCount, postCount, ratingCount, averageRating, " +
 		"avatarTinyHash, avatarSmallHash, avatarMediumHash, avatarOriginalHash, avatarLargeHash, " +
@@ -242,33 +259,53 @@ func (d *SQLDatastore) SaveNode(n crawling.Node) error {
 		return err
 	}
 	err = tx.Commit()
+	if err == nil {
+		log.Debugf("Saved node %s", n.ID)
+	}
 	return err
 }
 
 // AddUninitializedNodes adds nodes to the queue to be crawled
 func (d *SQLDatastore) AddUninitializedNodes(nodes []crawling.Node) error {
-	tx, err := d.db.Begin()
-	if err != nil {
-		return err
-	}
 	for n := range nodes {
-		err = func() error {
-			fmt.Printf("Added %s\n", nodes[n].ID)
+		err := func() error {
+			tx, err := d.db.Begin(); if err != nil {
+				return err
+			}
+			defer func() {
+				if p := recover(); p != nil {
+					tx.Rollback()
+					log.Panic(p)
+				} else if err != nil {
+					tx.Rollback() // err is non-nil; don't change it
+				}
+			}()
+
 			insertStatement, err := d.db.Prepare("INSERT IGNORE INTO nodes (id, lastUpdated) VALUES (?, '2000-01-01 00:00:00')")
 			if err != nil {
 				return err
 			}
 			defer insertStatement.Close()
 
-			_, err = tx.Stmt(insertStatement).Exec(nodes[n].ID)
+			result, err := tx.Stmt(insertStatement).Exec(nodes[n].ID); if err != nil {
+				return err
+			}
+
+			resultInt, err := result.RowsAffected(); if err != nil {
+				return err
+			}
+			err = tx.Commit()
+			if err == nil && resultInt > 0 {
+				log.Debugf("Added new node %s", nodes[n].ID)
+			}
 			return err
 		}()
+
 		if err != nil {
 			return err
 		}
 	}
-	err = tx.Commit()
-	return err
+	return nil
 }
 
 // GetNode gets a node's information from the datastore
@@ -295,6 +332,17 @@ func (d *SQLDatastore) AddItemsForNode(peerID string, items []crawling.Item) err
 	if err != nil {
 		return err
 	}
+
+	defer func() {
+		if p := recover(); p != nil {
+			tx.Rollback()
+			log.Panic(p)
+		} else if err != nil {
+			tx.Rollback() // err is non-nil; don't change it
+		} else {
+			err = tx.Commit() // err is nil; if Commit returns error update err
+		}
+	}()
 
 	// delete items for peerID
 	deleteFromItems, err := tx.Prepare("DELETE FROM items WHERE peerID = ?")
@@ -403,6 +451,5 @@ func (d *SQLDatastore) AddItemsForNode(peerID string, items []crawling.Item) err
 		}
 	}
 
-	err = tx.Commit()
 	return err
 }
