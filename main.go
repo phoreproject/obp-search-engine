@@ -32,7 +32,13 @@ func main() {
 	databaseURL := flag.String("mysql", "root@tcp(127.0.0.1:3306)/obpsearch", "database url used to connect to MySQL database")
 	rpcURL := flag.String("rpc", "127.0.0.1:5002", "rpc url used to connect to Phore Marketplace")
 	skipMigration := flag.Bool("skipMigration", false, "skip database migration to the newest version on start")
+	verbose := flag.Bool("verbose", false, "use more verbose logging")
 	flag.Parse()
+
+	if *verbose {
+		log.SetLevel(log.DebugLevel)
+		log.Info("Using verbose logging!")
+	}
 
 	CHUNK_SIZE := 100
 	MAX_PARALLEL_COROUTINE := 10
