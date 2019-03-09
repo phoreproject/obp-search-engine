@@ -3,17 +3,31 @@ package main
 import (
 	"database/sql"
 	"flag"
-	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/phoreproject/obp-search-engine/crawling"
 	"github.com/phoreproject/obp-search-engine/db"
 	"github.com/phoreproject/obp-search-engine/rpc"
-	"log"
+	log "github.com/sirupsen/logrus"
+	"io"
+	"os"
 	"sync"
 	"time"
 )
 
 func main() {
+	// configure logger output format
+	customFormatter := new(log.TextFormatter)
+	customFormatter.TimestampFormat = "2006-01-02 15:04:05"
+	customFormatter.FullTimestamp = true
+	log.SetFormatter(customFormatter)
+
+	// configure logger writers
+	logFile, err := os.Create("crawler.log")
+	if err != nil {
+		log.Panic(err)
+	}
+	log.SetOutput(io.MultiWriter(os.Stderr, logFile)) // write to file and stderr
+
 	// url format is user:password@protocol(address:port)/db_name
 	databaseURL := flag.String("mysql", "root@tcp(127.0.0.1:3306)/obpsearch", "database url used to connect to MySQL database")
 	rpcURL := flag.String("rpc", "127.0.0.1:5002", "rpc url used to connect to Phore Marketplace")
@@ -22,15 +36,16 @@ func main() {
 
 	CHUNK_SIZE := 100
 	MAX_PARALLEL_COROUTINE := 10
+	log.Debugf("Starting app with chunk size %d, and max parallel corutine cnt %d", CHUNK_SIZE, MAX_PARALLEL_COROUTINE)
 
 	database, err := sql.Open("mysql", *databaseURL+"?parseTime=true&interpolateParams=true")
 	if err != nil {
-		panic(err)
+		log.Panic(err)
 	}
 
 	d, err := db.NewSQLDatastore(database, !(*skipMigration))
 	if err != nil {
-		panic(err)
+		log.Panic(err)
 	}
 
 	r := rpc.NewRPC(*rpcURL)
@@ -39,24 +54,23 @@ func main() {
 
 	config, err := r.GetConfig()
 	if err != nil {
-		log.Printf("You need to run openbazaard. Please check: https://github.com/phoreproject/openbazaar-go")
-		panic(err)
+		log.Panic("You need to run openbazaard. Please check: https://github.com/phoreproject/openbazaar-go")
 	}
 
 	profile, err := r.GetProfile(config.PeerID)
 	if err != nil {
-		panic(err)
+		log.Panic(err)
 	}
 
 	userAgent, err := c.RPCInterface.GetUserAgentFromIPNS(config.PeerID)
 	if err != nil {
-		panic(err)
+		log.Panic(err)
 	}
 
 	// add ourselves
 	err = c.DB.SaveNodeUninitialized(crawling.Node{ID: config.PeerID, UserAgent: userAgent, Connections: []string{}, Profile: profile})
 	if err != nil {
-		panic(err)
+		log.Panic(err)
 	}
 	crawlerRound := 1
 	for {
@@ -94,31 +108,33 @@ func main() {
 					var wg sync.WaitGroup
 					wg.Add(len(lastNodes))
 					processedCnt += len(lastNodes)
+					processingStart := time.Now()
 					for i := range lastNodes {
 						go func(localNodeID string) {
 							defer wg.Done()
-							fmt.Printf("Processing node with id: %s\n", localNodeID)
+							log.Debugf("Processing node with id: %s\n", localNodeID)
 							err := c.CrawlNode(localNodeID)
 							if err != nil {
-								fmt.Println(err)
+								log.Error(err)
 								return
 							}
 
-							fmt.Printf("Crawling items for localNodeID: %s\n", localNodeID)
+							log.Debugf("Crawling items for localNodeID: %s\n", localNodeID)
 							items, err := c.RPCInterface.GetItems(localNodeID)
 							if err != nil {
-								fmt.Println(err)
+								log.Error(err)
 								return
 							}
 
 							err = c.DB.AddItemsForNode(localNodeID, items)
 							if err != nil {
-								fmt.Println(err)
+								log.Error(err)
 								return
 							}
 						}(lastNodes[i])
 					}
 					wg.Wait()
+					log.Debugf("Processing of %d nodes took %s.", len(lastNodes), time.Since(processingStart))
 				}
 
 				if !atLeastOneNode {
@@ -131,7 +147,7 @@ func main() {
 		select {
 		case <-done:
 			crawlerRound++
-			log.Printf("Crawler round %d took %s and processed %d items", crawlerRound, time.Since(startTime), processedCnt)
+			log.Debugf("Crawler round %d took %s and processed %d items", crawlerRound, time.Since(startTime), processedCnt)
 			processedCnt = 0
 		}
 	}

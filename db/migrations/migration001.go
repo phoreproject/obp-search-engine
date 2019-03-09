@@ -3,6 +3,7 @@ package migrations
 import (
 	"context"
 	"database/sql"
+	log "github.com/sirupsen/logrus"
 )
 
 type Migration001 struct{}
@@ -18,7 +19,7 @@ func (Migration001) Up(db *sql.DB, dbVersion int) error {
 	defer func() {
 		if p := recover(); p != nil {
 			tx.Rollback()
-			panic(p) // re-throw panic after Rollback
+			log.Panic(p) // re-throw panic after Rollback
 		} else if err != nil {
 			tx.Rollback() // err is non-nil; don't change it
 		} else {
@@ -29,7 +30,6 @@ func (Migration001) Up(db *sql.DB, dbVersion int) error {
 	// old table name
 	const oldTableName = "moderatorIdsPerItem"
 	const newTableName = "moderatorIdsPerNode"
-
 	if err = RenameTable(*tx, oldTableName, newTableName); err != nil {
 		return err
 	}
@@ -42,6 +42,7 @@ func (Migration001) Up(db *sql.DB, dbVersion int) error {
 		return err
 	}
 
+	log.Debugf("Updating configuration (database version) to %d", dbVersion)
 	stmt, err := tx.Prepare("INSERT INTO configuration (uniqueKey, value) VALUES(?, ?) ON DUPLICATE KEY UPDATE value=?")
 	if err != nil {
 		return err

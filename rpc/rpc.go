@@ -4,10 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"path"
-
 	"github.com/phoreproject/obp-search-engine/crawling"
 )
 
@@ -138,7 +136,6 @@ func (r OpenBazaarRPC) GetProfile(id string) (*crawling.ProfileResponse, error) 
 	var response crawling.ProfileResponse
 	//err = json.Unmarshal(responseRaw.Bytes(), &response) TODO - why duplicated?
 	if err := json.Unmarshal(responseRaw.Bytes(), &response); err != nil {
-		fmt.Println(err)
 		var possibleError ErrorResponse
 		if err := json.Unmarshal(responseRaw.Bytes(), &possibleError); err == nil {
 			return nil, nil // fail silently

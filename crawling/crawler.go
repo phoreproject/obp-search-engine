@@ -1,8 +1,8 @@
 package crawling
 
 import (
-	"errors"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"strings"
 	"time"
 )
@@ -38,7 +38,7 @@ func (c Crawler) CrawlNode(nextNodeID string) error {
 	if err != nil {
 		return err
 	} else if strings.Contains(userAgent, nextNode.ID) { // marketplace returns
-		return errors.New(fmt.Sprintf("Could not access node %s. Ignoring.\n  IPNS returned: %s", nextNode.ID, userAgent))
+		return fmt.Errorf("Could not access node %s. Ignoring.\n  IPNS returned: %s", nextNode.ID, userAgent)
 	}
 	nextNode.UserAgent = userAgent
 
@@ -46,12 +46,12 @@ func (c Crawler) CrawlNode(nextNodeID string) error {
 	if profile != nil && profile.Stats != nil {
 		nextNode.Profile = profile
 
-		fmt.Printf("Saving node %s...\n", nextNode.ID)
+		log.Debugf("Saving node %s...\n", nextNode.ID)
 		if err := c.DB.SaveNode(nextNode); err != nil {
 			return err
 		}
 	} else {
-		fmt.Printf("Saving empty node %s...\n", nextNode.ID)
+		log.Debugf("Saving empty node %s...\n", nextNode.ID)
 		if err := c.DB.SaveNodeUninitialized(nextNode); err != nil {
 			return err
 		}

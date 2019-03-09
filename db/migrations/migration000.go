@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	log "github.com/sirupsen/logrus"
 	"strconv"
 )
 
@@ -20,7 +21,7 @@ func (Migration000) Up(db *sql.DB, dbVersion int) error {
 	defer func() {
 		if p := recover(); p != nil {
 			tx.Rollback()
-			panic(p) // re-throw panic after Rollback
+			log.Panic(p)
 		} else if err != nil {
 			tx.Rollback() // err is non-nil; don't change it
 		} else {
@@ -29,6 +30,7 @@ func (Migration000) Up(db *sql.DB, dbVersion int) error {
 	}()
 
 	// add new column into nodes
+	log.Debugf("Migrating nodes table")
 	const nodeTableName = "nodes"
 	if err = AddColumn(*tx, nodeTableName, "userAgent", "VARCHAR(50) FIRST"); err != nil {
 		return err
@@ -76,6 +78,7 @@ func (Migration000) Up(db *sql.DB, dbVersion int) error {
 		return err
 	}
 
+	log.Debugf("Migrating items table")
 	// add new columns into items
 	const itemsTableName = "items"
 	if err = AddColumn(*tx, itemsTableName, "id", "INT FIRST"); err != nil {
@@ -83,7 +86,9 @@ func (Migration000) Up(db *sql.DB, dbVersion int) error {
 	}
 
 	var configurationValue sql.NullInt64
-	err = tx.QueryRow("SELECT COUNT(*) from " + itemsTableName).Scan(&configurationValue)
+	selectCnt := "SELECT COUNT(*) from " + itemsTableName
+	log.Debugf("Counting items: %s", selectCnt)
+	err = tx.QueryRow(selectCnt).Scan(&configurationValue)
 	if err != nil {
 		return err
 	}
@@ -93,7 +98,9 @@ func (Migration000) Up(db *sql.DB, dbVersion int) error {
 
 	for i := 0; i < int(configurationValue.Int64); i++ {
 		err = func() error {
-			stmt, err := tx.Prepare("UPDATE " + itemsTableName + " SET id = ? WHERE id IS NULL LIMIT 1")
+			updatingItemId := "UPDATE " + itemsTableName + " SET id = ? WHERE id IS NULL LIMIT 1"
+			log.Debugf("Updating item id: %s", updatingItemId)
+			stmt, err := tx.Prepare(updatingItemId)
 			if err != nil {
 				return err
 			}
@@ -111,7 +118,7 @@ func (Migration000) Up(db *sql.DB, dbVersion int) error {
 		return err
 	}
 	autoIncStart := strconv.FormatInt(configurationValue.Int64, 10)
-	if err = ModifyColumn(*tx, itemsTableName, "id", "INT NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=" + autoIncStart); err != nil {
+	if err = ModifyColumn(*tx, itemsTableName, "id", "INT NOT NULL AUTO_INCREMENT, AUTO_INCREMENT="+autoIncStart); err != nil {
 		return err
 	}
 
@@ -153,18 +160,21 @@ func (Migration000) Up(db *sql.DB, dbVersion int) error {
 	}
 
 	// add new tables
+	log.Debugf("Creating table moderators")
 	_, err = tx.Exec("CREATE TABLE IF NOT EXISTS moderators (id VARCHAR(50) NOT NULL, type VARCHAR(16), " +
 		"isVerified TINYINT(1) DEFAULT 0, PRIMARY KEY(id))")
 	if err != nil {
 		return err
 	}
 
+	log.Debugf("Creating table moderatorIdsPerItem")
 	_, err = tx.Exec("CREATE TABLE IF NOT EXISTS moderatorIdsPerItem (peerID VARCHAR(50) NOT NULL, " +
 		"itemDataBaseID INT NOT NULL, moderatorID VARCHAR(50) NOT NULL, PRIMARY KEY(peerID, itemDataBaseID, moderatorID))")
 	if err != nil {
 		return err
 	}
 
+	log.Debugf("Updating configuration (database version) to %d", dbVersion)
 	stmt, err := tx.Prepare("INSERT INTO configuration (uniqueKey, value) VALUES(?, ?) ON DUPLICATE KEY UPDATE value=?")
 	if err != nil {
 		return err

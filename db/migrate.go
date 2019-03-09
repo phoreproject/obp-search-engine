@@ -2,10 +2,9 @@ package db
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
 	"github.com/phoreproject/obp-search-engine/db/migrations"
-	"log"
+	log "github.com/sirupsen/logrus"
 )
 
 type Migration interface {
@@ -36,41 +35,39 @@ func Migrate(db *sql.DB) error {
 	switch {
 	case err == sql.ErrNoRows:
 		schemaVersionInt = 0
-		log.Println("Schema version is missing then expected version is 0")
+		log.Info("Schema version is missing, then expected version is 0")
 	case err != nil:
-		log.Println(err)
 		return err
 	default:
 		if configurationKey.Valid && configurationValue.Valid &&
 			configurationKey.String == migrations.DatabaseVersionKeyName{
-			log.Printf("Found schema version %d\n", configurationValue.Int64)
+			log.Info("Found schema version %d\n", configurationValue.Int64)
 			schemaVersionInt = int(configurationValue.Int64)
 			if int64(schemaVersionInt) != configurationValue.Int64 {
-				errMsg := fmt.Sprintf("Var %d overflows maximum int type", configurationValue.Int64)
-				log.Println(errMsg)
-				return errors.New(errMsg)
+				return fmt.Errorf("var %d overflows maximum int type", configurationValue.Int64)
 			}
 		} else {
-			log.Printf("Schema version is NULL, expected version is 0")
+			log.Error("Schema version is NULL, expected version is 0")
 			return err
 		}
 	}
 
 	if schemaVersionInt == len(Migrations) {
-		log.Println("Nothing to do. Database is updated.")
+		log.Info("Nothing to do. Database is updated.")
 		return nil
 	} else if schemaVersionInt > len(Migrations) {
-		return errors.New(fmt.Sprintf("Current schema version is higher (%d) than code version (%d)", schemaVersionInt, len(Migrations)))
+		return fmt.Errorf("current schema version is higher (%d) than code version (%d)", schemaVersionInt, len(Migrations))
 	}
 
 
 	for i := schemaVersionInt; i < len(Migrations); i++ {
+		log.Debugf("Migration%d starting", i)
 		err := Migrations[i].Up(db, i+1)
 		if err != nil {
-			log.Printf("Cannot migrate db, because of error: %s", err)
 			return err
 		}
 	}
+	log.Infof("Migrated to version %d", len(Migrations))
 
 	return nil
 }
