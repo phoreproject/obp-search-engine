@@ -41,7 +41,7 @@ func Migrate(db *sql.DB) error {
 	default:
 		if configurationKey.Valid && configurationValue.Valid &&
 			configurationKey.String == migrations.DatabaseVersionKeyName{
-			log.Info("Found schema version %d\n", configurationValue.Int64)
+			log.Infof("Found schema version %d\n", configurationValue.Int64)
 			schemaVersionInt = int(configurationValue.Int64)
 			if int64(schemaVersionInt) != configurationValue.Int64 {
 				return fmt.Errorf("var %d overflows maximum int type", configurationValue.Int64)
