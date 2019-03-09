@@ -42,7 +42,7 @@ func main() {
 		log.Info("Using verbose logging!")
 	}
 
-	log.Debugf("Starting app with chunk size %d, and max parallel corutine cnt %d", chunkSize, maxParallelCorutine)
+	log.Debugf("Starting app with chunk size %d, and max parallel corutine cnt %d", *chunkSize, *maxParallelCorutine)
 
 	database, err := sql.Open("mysql", *databaseURL+"?parseTime=true&interpolateParams=true")
 	if err != nil {
