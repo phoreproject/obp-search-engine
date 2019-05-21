@@ -30,8 +30,18 @@ app.use(cookieParser());
 app.use(csrfProtection);
 
 // tables dependencies
-db.moderators.belongsToMany(db.nodes, {through: 'moderatorIdsPerItem', foreignKey: 'moderatorID', targetKey: 'id', otherKey: 'peerID'});
-db.nodes.belongsToMany(db.moderators, {through: 'moderatorIdsPerItem', foreignKey: 'peerID', targetKey: 'id', otherKey: 'moderatorID'});
+db.moderators.belongsToMany(db.nodes, {
+    through: 'moderatorIdsPerItem',
+    foreignKey: 'moderatorID',
+    targetKey: 'id',
+    otherKey: 'peerID'
+});
+db.nodes.belongsToMany(db.moderators, {
+    through: 'moderatorIdsPerItem',
+    foreignKey: 'peerID',
+    targetKey: 'id',
+    otherKey: 'moderatorID'
+});
 
 // development only
 if ('development' === app.get('env')) {
@@ -56,8 +66,7 @@ function handleUnlisted(req, res) {
 function myAsyncAuthorizer(username, password, cb) {
     if (username === 'phoreadmin' && password === process.env.PASSWORD) {
         return cb(null, true);
-    }
-    else {
+    } else {
         return setTimeout(() => cb(null, false), 3000 + 200 * Math.random());
     }
 }
@@ -106,24 +115,29 @@ app.get('/statistics', async (req, res) => {
 
             if (err) {
                 res.render('statistics', {tags: tags.map((tag) => tag.toJSON()), err: err});
-            }
-            else if (resp.statusCode !== 200) {
-                res.render('statistics', {tags: tags.map((tag) => tag.toJSON()), err: 'RPC returns status code ' + resp.statusCode});
-            }
-            else {
+            } else if (resp.statusCode !== 200) {
+                res.render('statistics', {
+                    tags: tags.map((tag) => tag.toJSON()),
+                    err: 'RPC returns status code ' + resp.statusCode
+                });
+            } else {
                 request.post("https://chainz.cryptoid.info/phr/api.dws?q=getblockcount", (errChainz, respChainz, bodyChainz) => {
                     if (errChainz) {
-                        res.render('statistics', {tags: tags.map((tag) => tag.toJSON()), err: "RPC works (best block is"
-                                + body.result + "), but chainz.cryptoid.info returns error " + err});
-                    }
-                    else if(respChainz.statusCode !== 200) {
-                        res.render('statistics', {tags: tags.map((tag) => tag.toJSON()), err: "RPC works (best block is"
-                                + body.result + "), but chainz.cryptoid.info returns status code " + err});
-                    }
-                    else {
-                        res.render('statistics', {tags: tags.map((tag) => tag.toJSON()),
+                        res.render('statistics', {
+                            tags: tags.map((tag) => tag.toJSON()), err: "RPC works (best block is"
+                                + body.result + "), but chainz.cryptoid.info returns error " + err
+                        });
+                    } else if (respChainz.statusCode !== 200) {
+                        res.render('statistics', {
+                            tags: tags.map((tag) => tag.toJSON()), err: "RPC works (best block is"
+                                + body.result + "), but chainz.cryptoid.info returns status code " + err
+                        });
+                    } else {
+                        res.render('statistics', {
+                            tags: tags.map((tag) => tag.toJSON()),
                             rpcBlockCount: body.result, chainzBlockCount: parseInt(bodyChainz, 10),
-                            diff: parseInt(bodyChainz, 10) - body.result});
+                            diff: parseInt(bodyChainz, 10) - body.result
+                        });
                     }
                 });
             }
@@ -191,58 +205,69 @@ async function setIsVerified(req, res, value) {
             transaction: transaction,
         });
 
-        let nodes = await db.nodes.findAll({
-            include:[
+        if (moderator == null && value === true) { // moderator doesn't exists yet, but we want to add one
+            await db.moderators.create(
                 {
-                    model: db.moderators,
-                    where: {
-                        id: req.params['id']
+                    id: req.params['id'],
+                    isVerified: value
+                },
+                {
+                    transaction: transaction,
+                })
+        } else if (moderator != null) { // moderator exists
+            let nodes = await db.nodes.findAll({
+                include: [
+                    {
+                        model: db.moderators,
+                        where: {
+                            id: req.params['id']
+                        }
+                    }
+                ],
+                transaction: transaction,
+            });
+
+            if (value) {
+                for (let i = 0; i < nodes.length; i++) {
+                    await nodes[i].update({
+                        moderator: true,
+                        verifiedModerator: true,
+                    }, {
+                        transaction: transaction,
+                    });
+                }
+            } else {
+                for (let i = 0; i < nodes.length; i++) {
+                    let mods = await db.moderators.findAll({
+                        include: [
+                            {
+                                model: db.nodes,
+                                where: {
+                                    id: nodes[i].id
+                                }
+                            }
+                        ],
+                        where: {isVerified: true},
+                        transaction: transaction
+                    });
+
+                    if (mods.length === 0) { // no more verified moderators for that node
+                        nodes[i].update({
+                            verifiedModerator: false
+                        }, {
+                            transaction: transaction
+                        })
                     }
                 }
-            ],
-            transaction: transaction,
-        });
-
-        if (value) {
-            for (let i = 0; i < nodes.length; i++) {
-                await nodes[i].update({
-                    moderator: true,
-                    verifiedModerator: true,
-                }, {
-                    transaction: transaction,
-                });
             }
-        }
-        else {
-            for (let i = 0; i < nodes.length; i++) {
-                let mods = await db.moderators.findAll({
-                    include: [
-                        {
-                            model: db.nodes,
-                            where: {
-                                id: nodes[i].id
-                            }
-                        }
-                    ],
-                    where: { isVerified: true },
-                    transaction: transaction
-                });
 
-                if (mods.length === 0) { // no more verified moderators for that node
-                    nodes[i].update({
-                        verifiedModerator: false
-                    }, {
-                        transaction: transaction
-                    })
-                }
-            }
+            await moderator.update({
+                isVerified: value
+            }, {
+                transaction: transaction
+            });
         }
 
-        await moderator.update({
-            isVerified: value
-        }, {
-            transaction: transaction
-        });
         res.redirect('/moderators');
     });
 }
