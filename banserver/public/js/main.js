@@ -5,6 +5,13 @@ $('#js-unlist').click((e) => {
   });
 });
 
+$('#js-list').click((e) => {
+    e.preventDefault();
+    $.get(`/list/${$('#js-peerid').val()}`, () => {
+        window.location.reload(true);
+    });
+});
+
 
 $('#js-verify').click((e) => {
     e.preventDefault();

@@ -53,7 +53,8 @@ function handleUnlisted(req, res) {
     db.nodes.findAll({
         where: {
             listed: false,
-            blocked: false
+            blocked: false,
+            listingCount: {[db.sequelize.Op.ne]: 0},
         },
         order: [
             ['name', 'DESC']
