@@ -210,7 +210,8 @@ async function setIsVerified(req, res, value) {
             await db.moderators.create(
                 {
                     id: req.params['id'],
-                    isVerified: value
+                    isVerified: value,
+                    type: 'standard'
                 },
                 {
                     transaction: transaction,
