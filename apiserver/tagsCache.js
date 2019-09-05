@@ -4,13 +4,13 @@ const moment = require('moment');
 
 const ORM = require('./ORM.js');
 
-const MaxDefaultTags = 10;
+const MaxDefaultTags = 11;
 const UpdateIntervalDefault = 12 * 60 * 60 * 1000;
 const BatchSize = 100;
 
-export class TagsCache {
+class TagsCache {
     constructor(maxTags, updateInterval, updateBatchSize) {
-        this.defaultTags = [
+        this._defaultTags = [
             'Art',
             'Music',
             'Toys',
@@ -43,7 +43,7 @@ export class TagsCache {
 
         let nodeQueryWhere = {
             lastUpdated: {
-                [sequelize.Op.gt]: moment(new Date()).subtract(24, 'hours').toDate()
+                [ORM.sequelize.Op.gt]: moment(new Date()).subtract(24, 'hours').toDate()
             },
             listed: true,
             blocked: false
@@ -81,10 +81,8 @@ export class TagsCache {
         const max = maxTags || this.maxTags;
 
         if (this.tags === undefined) {
-            return JSON.stringify(this.defaultTags);
+            return JSON.stringify(this._defaultTags);
         } else {
-
-
             let tags = Object.keys(this.tags).map(function(key) {
                 return [key, this.tags[key]];
             });
@@ -96,3 +94,7 @@ export class TagsCache {
         }
     }
 }
+
+module.exports = {
+    TagsCache: TagsCache,
+};

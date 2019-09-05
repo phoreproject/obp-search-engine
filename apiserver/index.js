@@ -6,7 +6,9 @@ const path = require('path');
 const moment = require('moment');
 
 const ConfigCreator = require('./configCreator').ConfigCreator;
-const TagCache = TagsCache();
+let TagCache = require('./tagsCache').TagsCache;
+TagCache = new TagCache();
+
 const ORM = require('./ORM.js');
 
 app.get('/logo.png', (req, res) => {
@@ -39,7 +41,7 @@ app.get('/search/listings', async (req, res) => {
         // create query to filter by rating
         if (queryRating !== 0) {
             itemQueryOptions.where.averageRating = {
-                [sequelize.Op.gte]: {
+                [ORM.sequelize.Op.gte]: {
                     5: 4.75,
                     4: 4,
                     3: 3,
@@ -73,15 +75,15 @@ app.get('/search/listings', async (req, res) => {
             // const words = req.query.q.replace(/[^\w]/g, '').split(' ') old version, why this replace pattern?
             const words = req.query.q.split(' ').map((word) => {
                 return {
-                    [sequelize.Op.like]: '%' + word + '%'
+                    [ORM.sequelize.Op.like]: '%' + word + '%'
                 };
             });
             const oneOfWordsInTitle = {
-                [sequelize.Op.or]: words
+                [ORM.sequelize.Op.or]: words
             };
 
             itemQueryOptions.where = {
-                [sequelize.Op.or]: {
+                [ORM.sequelize.Op.or]: {
                     title: oneOfWordsInTitle,
                     tags: oneOfWordsInTitle
                 }
@@ -90,7 +92,7 @@ app.get('/search/listings', async (req, res) => {
 
         let nodeQueryWhere = {
             lastUpdated: {
-                [sequelize.Op.gt]: moment(new Date()).subtract(8, 'hours').toDate()
+                [ORM.sequelize.Op.gt]: moment(new Date()).subtract(8, 'hours').toDate()
             },
             listed: true,
             blocked: false
@@ -131,7 +133,7 @@ app.get('/search/listings', async (req, res) => {
                 where:
                     {
                         peerID: {
-                            [sequelize.Op.eq]: peerIDs[i]
+                            [ORM.sequelize.Op.eq]: peerIDs[i]
                         }
                     }
             };
@@ -294,6 +296,10 @@ app.get('/verified_moderators', async (req, res) => {
         }
     }
     res.send(result);
+});
+
+app.get('/healthCheck', async (req, res) => {
+    res.send('');
 });
 
 const port = process.env.PORT || 3000;
