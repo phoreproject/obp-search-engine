@@ -65,10 +65,11 @@ export class TagsCache {
             for (const r of itemQueryOutput.rows) {
                 const t = r.tags.split(',');
                 for (const tag of t) {
-                    if (localTags.hasOwnProperty(tag)) {
-                        localTags[tag]++;
+                    const capitalizeTag = tag.charAt(0).toUpperCase() + tag.substring(1).toLowerCase();
+                    if (localTags.hasOwnProperty(capitalizeTag)) {
+                        localTags[capitalizeTag]++;
                     } else {
-                        localTags[tag] = 0;
+                        localTags[capitalizeTag] = 0;
                     }
                 }
             }
