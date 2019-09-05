@@ -1,7 +1,7 @@
 {
   "name": "apiserver",
-  "version": "2.2.0",
-  "description": "Serves a basic OpenBazaar search engine",
+  "version": "2.3.0",
+  "description": "Serves a basic Phore Marketplace search engine",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
@@ -13,6 +13,6 @@
     "express": "^4.16.2",
     "moment": "^2.21.0",
     "mysql2": "^1.6.4",
-    "sequelize": "^4.42.0"
+    "sequelize": "^4.44.3"
   }
 }
