@@ -2,20 +2,12 @@
 
 const express = require('express');
 const app = express();
-const Sequelize = require('sequelize');
-
 const path = require('path');
 const moment = require('moment');
 
-const sequelize = new Sequelize(process.env.DATABASE_URI || 'mysql://' + process.env.RDS_USERNAME + ':' + process.env.RDS_PASSWORD + '@' + process.env.RDS_HOSTNAME + ':' + process.env.RDS_PORT + '/' + process.env.RDS_DB_NAME, {omitNull: true});
-
 const ConfigCreator = require('./configCreator').ConfigCreator;
-const Item = sequelize.import('./models/item');
-const Node = sequelize.import('./models/node');
-const Moderators = sequelize.import('./models/moderators');
-const ModeratorIdsPerItem = sequelize.import('./models/moderatorIdsPerItem');
-
-Item.belongsTo(Node, {foreignKey: 'peerID'});
+const TagCache = TagsCache();
+const ORM = require('./ORM.js');
 
 app.get('/logo.png', (req, res) => {
     res.sendFile('logo.png', {root: path.join(__dirname)});
@@ -43,7 +35,6 @@ app.get('/search/listings', async (req, res) => {
         if (queryNSFW === false) { // return no nsfw results or all results
             itemQueryOptions.where.nsfw = queryNSFW;
         }
-
 
         // create query to filter by rating
         if (queryRating !== 0) {
@@ -117,17 +108,16 @@ app.get('/search/listings', async (req, res) => {
         }
 
         itemQueryOptions.include = [{
-            model: Node,
+            model: ORM.Node,
             where: nodeQueryWhere
         }];
-
 
         if (queryContractType !== undefined && queryContractType !== 'ANY') {
             itemQueryOptions.where.contractType = queryContractType
         }
 
         // remove duplicated peerID's
-        const itemQueryOutput = await Item.findAndCountAll(itemQueryOptions);
+        const itemQueryOutput = await ORM.Item.findAndCountAll(itemQueryOptions);
         let peerIDs = new Set();
         itemQueryOutput.rows.forEach((item) => {
             peerIDs.add(item.peerID);
@@ -146,7 +136,7 @@ app.get('/search/listings', async (req, res) => {
                     }
             };
 
-            let mods = await ModeratorIdsPerItem.findAll(moderatorQueryOptions);
+            let mods = await ORM.ModeratorIdsPerItem.findAll(moderatorQueryOptions);
             if (mods !== undefined && mods.length > 0) {
                 moderators[peerIDs[i]] = [];
                 for (let j in mods) {
@@ -259,13 +249,22 @@ app.get('/search/listings', async (req, res) => {
     }
 });
 
+app.get('/search/toptags', async (req, res) => {
+    try {
+        res.send(TagCache.getTags(req.query.tags));
+    }
+    catch (err) {
+        return res.status(500).send(err);
+    }
+});
+
 app.get('/verified_moderators', async (req, res) => {
     const options = {};
     options.where = {
         isVerified: true
     };
 
-    const out = await Moderators.findAll(options);
+    const out = await ORM.Moderators.findAll(options);
     const result = {
         data: {
             name: 'Marketplace',

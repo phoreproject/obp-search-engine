@@ -5,7 +5,8 @@ module.exports = {
 
     'links': {
         'self': '',
-        'listings': 'https://search.phore.io/search/listings'
+        'listings': 'https://search.phore.io/search/listings',
+        'topTags': 'https://search.phore.io/search/toptags'
     },
 
     'options': {
