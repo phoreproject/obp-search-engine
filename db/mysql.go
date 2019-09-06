@@ -23,6 +23,7 @@ func CreateNewDatabaseTables(db *sql.DB) (*SQLDatastore, error) {
 	if err != nil {
 		return nil, err
 	}
+	log.Debugf("Table configuration created")
 
 	statement, err := db.Prepare("INSERT IGNORE INTO configuration (uniqueKey, value) VALUES(?, ?)")
 	if err != nil {
@@ -34,6 +35,7 @@ func CreateNewDatabaseTables(db *sql.DB) (*SQLDatastore, error) {
 	if err != nil {
 		return nil, err
 	}
+	log.Debugf("Schema version %d written into configuration", migrations.DatabaseVersion)
 
 	_, err = db.Exec("CREATE TABLE IF NOT EXISTS nodes (userAgent VARCHAR(50), id VARCHAR(50) NOT NULL, lastUpdated DATETIME, " +
 		"name VARCHAR(40), handle VARCHAR(40), location VARCHAR(40), nsfw TINYINT(1), vendor TINYINT(1), moderator TINYINT(1), " +
@@ -46,6 +48,7 @@ func CreateNewDatabaseTables(db *sql.DB) (*SQLDatastore, error) {
 	if err != nil {
 		return nil, err
 	}
+	log.Debugf("Table nodes created")
 
 	_, err = db.Exec("CREATE TABLE IF NOT EXISTS items (id int NOT NULL AUTO_INCREMENT, peerID VARCHAR(50), score TINYINT, hash VARCHAR(50) NOT NULL, " +
 		"slug VARCHAR(70), title VARCHAR(140), tags VARCHAR(410), categories VARCHAR(410), contractType VARCHAR(20), " +
@@ -55,18 +58,21 @@ func CreateNewDatabaseTables(db *sql.DB) (*SQLDatastore, error) {
 	if err != nil {
 		return nil, err
 	}
+	log.Debugf("Table items created")
 
 	_, err = db.Exec("CREATE TABLE IF NOT EXISTS moderators (id VARCHAR(50) NOT NULL, type VARCHAR(16), " +
 		"isVerified TINYINT(1) DEFAULT 0, PRIMARY KEY(id))")
 	if err != nil {
 		return nil, err
 	}
+	log.Debugf("Table moderators created")
 
 	_, err = db.Exec("CREATE TABLE IF NOT EXISTS moderatorIdsPerItem (peerID VARCHAR(50) NOT NULL, " +
 		"moderatorID VARCHAR(50) NOT NULL, PRIMARY KEY(peerID, moderatorID))")
 	if err != nil {
 		return nil, err
 	}
+	log.Debugf("Table moderatorIdsPerItem created")
 	return &SQLDatastore{db: db}, nil
 }
 
