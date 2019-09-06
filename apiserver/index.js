@@ -221,6 +221,7 @@ app.get('/search/listings', async (req, res) => {
                     tags: r.tags.split(','),
                     categories: r.categories.split(','),
                     contractType: r.contractType,
+                    format: r.format,
                     description: r.description,
                     thumbnail: {
                         tiny: thumbnails[0],

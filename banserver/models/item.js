@@ -17,6 +17,7 @@ module.exports = function (sequelize, DataTypes) {
         tags: DataTypes.STRING(410),
         categories: DataTypes.STRING(410),
         contractType: DataTypes.STRING(20),
+        format: DataTypes.STRING(20),
         description: DataTypes.TEXT,
         thumbnail: DataTypes.STRING(260),
         language: DataTypes.STRING(20),
