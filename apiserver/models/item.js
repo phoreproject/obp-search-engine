@@ -31,7 +31,7 @@ module.exports = function (sequelize, DataTypes) {
         averageRating: DataTypes.DECIMAL(3, 2),
         ratingCount: DataTypes.INTEGER,
 
-        acceptedCurrencies: DataTypes.VARCHAR(40),
+        acceptedCurrencies: DataTypes.STRING(40),
 
         coinType: DataTypes.STRING(20),
         coinDivisibility: DataTypes.INTEGER,
