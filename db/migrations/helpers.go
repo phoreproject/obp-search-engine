@@ -53,6 +53,7 @@ func RenameTable(tx sql.Tx, oldTableName string, newTableName string) error {
 }
 
 func UpdateDatabaseVersion(tx sql.Tx, dbVersion int) error {
+	log.Debugf("Updating configuration (database version) to %d", dbVersion)
 	stmt, err := tx.Prepare("INSERT INTO configuration (uniqueKey, value) VALUES(?, ?) ON DUPLICATE KEY UPDATE value=?")
 	if err != nil {
 		return err
@@ -60,5 +61,10 @@ func UpdateDatabaseVersion(tx sql.Tx, dbVersion int) error {
 	defer stmt.Close()
 
 	_, err = stmt.Exec(DatabaseVersionKeyName, dbVersion, dbVersion)
+	if err != nil {
+		log.Debugf("Database update (%d) failed.", dbVersion)
+		return err
+	}
+	log.Debugf("Updated database version to: %d", dbVersion)
 	return err
 }

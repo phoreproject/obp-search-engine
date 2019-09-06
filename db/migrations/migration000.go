@@ -174,6 +174,5 @@ func (Migration000) Up(db *sql.DB, dbVersion int) error {
 		return err
 	}
 
-	log.Debugf("Updating configuration (database version) to %d", dbVersion)
 	return UpdateDatabaseVersion(*tx, dbVersion)
 }
