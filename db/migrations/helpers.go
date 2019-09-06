@@ -60,7 +60,5 @@ func UpdateDatabaseVersion(tx sql.Tx, dbVersion int) error {
 	defer stmt.Close()
 
 	_, err = stmt.Exec(DatabaseVersionKeyName, dbVersion, dbVersion)
-	if err != nil {
-		return err
-	}
+	return err
 }
