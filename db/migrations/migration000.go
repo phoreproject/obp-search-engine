@@ -175,16 +175,5 @@ func (Migration000) Up(db *sql.DB, dbVersion int) error {
 	}
 
 	log.Debugf("Updating configuration (database version) to %d", dbVersion)
-	stmt, err := tx.Prepare("INSERT INTO configuration (uniqueKey, value) VALUES(?, ?) ON DUPLICATE KEY UPDATE value=?")
-	if err != nil {
-		return err
-	}
-	defer stmt.Close()
-
-	_, err = stmt.Exec(DatabaseVersionKeyName, dbVersion, dbVersion)
-	if err != nil {
-		return err
-	}
-
-	return err
+	return UpdateDatabaseVersion(*tx, dbVersion)
 }

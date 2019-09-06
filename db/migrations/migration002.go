@@ -5,10 +5,9 @@ import (
 	"database/sql"
 	log "github.com/sirupsen/logrus"
 )
+type Migration002 struct{}
 
-type Migration001 struct{}
-
-func (Migration001) Up(db *sql.DB, dbVersion int) error {
+func (Migration002) Up(db *sql.DB, dbVersion int) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	tx, err := db.BeginTx(ctx, nil)
@@ -27,18 +26,8 @@ func (Migration001) Up(db *sql.DB, dbVersion int) error {
 		}
 	}()
 
-	// old table name
-	const oldTableName = "moderatorIdsPerItem"
-	const newTableName = "moderatorIdsPerNode"
-	if err = RenameTable(*tx, oldTableName, newTableName); err != nil {
-		return err
-	}
-
-	if err = ChangePrimaryKey(*tx, newTableName, "(peerID, moderatorID)"); err != nil {
-		return err
-	}
-
-	if err = DeleteColumn(*tx, newTableName, "itemDataBaseID"); err != nil {
+	const itemsTableName = "items"
+	if err = AddColumn(*tx, itemsTableName, "format", "VARCHAR(20) AFTER contractType"); err != nil {
 		return err
 	}
 

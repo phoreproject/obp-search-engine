@@ -49,9 +49,9 @@ func CreateNewDatabaseTables(db *sql.DB) (*SQLDatastore, error) {
 
 	_, err = db.Exec("CREATE TABLE IF NOT EXISTS items (id int NOT NULL AUTO_INCREMENT, peerID VARCHAR(50), score TINYINT, hash VARCHAR(50) NOT NULL, " +
 		"slug VARCHAR(70), title VARCHAR(140), tags VARCHAR(410), categories VARCHAR(410), contractType VARCHAR(20), " +
-		"description TEXT, thumbnail VARCHAR(260), language VARCHAR(20), priceAmount BIGINT, priceCurrency VARCHAR(10), " +
-		"priceModifier INT, nsfw TINYINT(1), averageRating DECIMAL(3,2), ratingCount INT, coinType VARCHAR(20), coinDivisibility INT, " +
-		"normalizedPrice DECIMAL(40, 20), PRIMARY KEY (id))")
+		"format VARCHAR(20), description TEXT, thumbnail VARCHAR(260), language VARCHAR(20), priceAmount BIGINT, " +
+		"priceCurrency VARCHAR(10), priceModifier INT, nsfw TINYINT(1), averageRating DECIMAL(3,2), ratingCount INT, " +
+		"coinType VARCHAR(20), coinDivisibility INT, normalizedPrice DECIMAL(40, 20), PRIMARY KEY (id))")
 	if err != nil {
 		return nil, err
 	}
@@ -369,11 +369,11 @@ func (d *SQLDatastore) AddItemsForNode(peerID string, items []crawling.Item) err
 	// add again all items and all moderators into db
 	for i := range items {
 		err = func() error {
-			insertIntoItems, err := tx.Prepare("INSERT INTO items (peerID, hash, score, slug, title, tags, categories, contractType, " +
+			insertIntoItems, err := tx.Prepare("INSERT INTO items (peerID, hash, score, slug, title, tags, categories, contractType, format, " +
 				"description, thumbnail, language, priceAmount, priceCurrency, priceModifier, nsfw, averageRating, ratingCount, " +
 				"coinType, coinDivisibility, normalizedPrice) " +
-				"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE " +
-				"score=?, slug=?, title=?, tags=?, categories=?, contractType=?, description=?, thumbnail=?, language=?, " +
+				"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE " +
+				"score=?, slug=?, title=?, tags=?, categories=?, contractType=?, format=?, description=?, thumbnail=?, language=?, " +
 				"priceAmount=?, priceCurrency=?, priceModifier=?, nsfw=?, averageRating=?, ratingCount=?, coinType=?," +
 				"coinDivisibility=?, normalizedPrice=?")
 			if err != nil {
@@ -391,6 +391,7 @@ func (d *SQLDatastore) AddItemsForNode(peerID string, items []crawling.Item) err
 				strings.Join(items[i].Tags, ","),
 				strings.Join(items[i].Categories, ","),
 				items[i].ContractType,
+				items[i].Format,
 				items[i].Description,
 				items[i].Thumbnail.Tiny+","+items[i].Thumbnail.Small+","+items[i].Thumbnail.Medium+","+items[i].Thumbnail.Original+","+items[i].Thumbnail.Large,
 				items[i].Language,
@@ -411,6 +412,7 @@ func (d *SQLDatastore) AddItemsForNode(peerID string, items []crawling.Item) err
 				strings.Join(items[i].Tags, ","),
 				strings.Join(items[i].Categories, ","),
 				items[i].ContractType,
+				items[i].Format,
 				items[i].Description,
 				items[i].Thumbnail.Tiny+","+items[i].Thumbnail.Small+","+items[i].Thumbnail.Medium+","+items[i].Thumbnail.Original+","+items[i].Thumbnail.Large,
 				items[i].Language,

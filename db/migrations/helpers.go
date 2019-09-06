@@ -6,7 +6,7 @@ import (
 )
 
 const DatabaseVersionKeyName = "schema_version"
-const DatabaseVersion = 1
+const DatabaseVersion = 2 // added 'format' field into items
 
 // string concatenation is intended in functions below, because tx.Prepare cannot handle this syntax :(
 func AddColumn(tx sql.Tx, table string, columnName string, columnType string) error {
@@ -50,4 +50,17 @@ func RenameTable(tx sql.Tx, oldTableName string, newTableName string) error {
 	log.Debugf("RenameTable: %s", str)
 	_, err := tx.Exec(str)
 	return err
+}
+
+func UpdateDatabaseVersion(tx sql.Tx, dbVersion int) error {
+	stmt, err := tx.Prepare("INSERT INTO configuration (uniqueKey, value) VALUES(?, ?) ON DUPLICATE KEY UPDATE value=?")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(DatabaseVersionKeyName, dbVersion, dbVersion)
+	if err != nil {
+		return err
+	}
 }

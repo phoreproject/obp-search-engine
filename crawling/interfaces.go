@@ -50,6 +50,7 @@ type Item struct {
 	Categories         []string  `json:"categories"`
 	NSFW               bool      `json:"nsfw"`
 	ContractType       string    `json:"contractType"`
+	Format             string    `json:"format"`
 	Description        string    `json:"description"`
 	Thumbnail          Thumbnail `json:"thumbnail"`
 	Price              Price     `json:"price"`
@@ -62,7 +63,7 @@ type Item struct {
 	AcceptedCurrencies []string  `json:"acceptedCurrencies"`
 	CoinType           string    `json:"coinType"`
 	CoinDivisibility   uint32    `json:"coinDivisibility"`
-	NormalizedPrice    float64   `json:"normalizedPrice"`  // it is missing in api
+	NormalizedPrice    float64   `json:"normalizedPrice"` // it is missing in api
 }
 
 type ProfileSocialAccount struct {
@@ -124,24 +125,24 @@ type Moderator struct {
 
 // ProfileResponse is the response to requests for a user's profile
 type ProfileResponse struct {
-	PeerID           string               `protobuf:"bytes,1,opt,name=peerID,proto3" json:"peerID,omitempty"`
-	Handle           string               `protobuf:"bytes,2,opt,name=handle,proto3" json:"handle,omitempty"`
-	Name             string               `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
-	Location         string               `protobuf:"bytes,4,opt,name=location,proto3" json:"location,omitempty"`
-	About            string               `protobuf:"bytes,5,opt,name=about,proto3" json:"about,omitempty"`
-	ShortDescription string               `protobuf:"bytes,6,opt,name=shortDescription,proto3" json:"shortDescription,omitempty"`
-	Nsfw             bool                 `protobuf:"varint,7,opt,name=nsfw,proto3" json:"nsfw,omitempty"`
-	Vendor           bool                 `protobuf:"varint,8,opt,name=vendor,proto3" json:"vendor,omitempty"`
-	Moderator        bool                 `protobuf:"varint,9,opt,name=moderator,proto3" json:"moderator,omitempty"`
-	ModeratorInfo    *Moderator           `protobuf:"bytes,10,opt,name=moderatorInfo,proto3" json:"moderatorInfo,omitempty"`
-	ContactInfo      *ProfileContactInfo  `protobuf:"bytes,11,opt,name=contactInfo,proto3" json:"contactInfo,omitempty"`
-	Colors           *ProfileColors       `protobuf:"bytes,12,opt,name=colors,proto3" json:"colors,omitempty"`
-	AvatarHashes     *ProfileImage        `protobuf:"bytes,13,opt,name=avatarHashes,proto3" json:"avatarHashes,omitempty"`
-	HeaderHashes     *ProfileImage        `protobuf:"bytes,14,opt,name=headerHashes,proto3" json:"headerHashes,omitempty"`
-	Stats            *ProfileStats        `protobuf:"bytes,15,opt,name=stats,proto3" json:"stats,omitempty"`
-	BitcoinPubkey    string               `protobuf:"bytes,16,opt,name=bitcoinPubkey,proto3" json:"bitcoinPubkey,omitempty"`
-	LastModified     string               `protobuf:"bytes,17,opt,name=lastModified,proto3" json:"lastModified,omitempty"` //in marketplace it is *timestamp.Timestamp from protocol buffer, but it is problematic in parsing to json.
-	Currencies       []string             `protobuf:"bytes,18,rep,name=currencies,proto3" json:"currencies,omitempty"`
+	PeerID           string              `protobuf:"bytes,1,opt,name=peerID,proto3" json:"peerID,omitempty"`
+	Handle           string              `protobuf:"bytes,2,opt,name=handle,proto3" json:"handle,omitempty"`
+	Name             string              `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
+	Location         string              `protobuf:"bytes,4,opt,name=location,proto3" json:"location,omitempty"`
+	About            string              `protobuf:"bytes,5,opt,name=about,proto3" json:"about,omitempty"`
+	ShortDescription string              `protobuf:"bytes,6,opt,name=shortDescription,proto3" json:"shortDescription,omitempty"`
+	Nsfw             bool                `protobuf:"varint,7,opt,name=nsfw,proto3" json:"nsfw,omitempty"`
+	Vendor           bool                `protobuf:"varint,8,opt,name=vendor,proto3" json:"vendor,omitempty"`
+	Moderator        bool                `protobuf:"varint,9,opt,name=moderator,proto3" json:"moderator,omitempty"`
+	ModeratorInfo    *Moderator          `protobuf:"bytes,10,opt,name=moderatorInfo,proto3" json:"moderatorInfo,omitempty"`
+	ContactInfo      *ProfileContactInfo `protobuf:"bytes,11,opt,name=contactInfo,proto3" json:"contactInfo,omitempty"`
+	Colors           *ProfileColors      `protobuf:"bytes,12,opt,name=colors,proto3" json:"colors,omitempty"`
+	AvatarHashes     *ProfileImage       `protobuf:"bytes,13,opt,name=avatarHashes,proto3" json:"avatarHashes,omitempty"`
+	HeaderHashes     *ProfileImage       `protobuf:"bytes,14,opt,name=headerHashes,proto3" json:"headerHashes,omitempty"`
+	Stats            *ProfileStats       `protobuf:"bytes,15,opt,name=stats,proto3" json:"stats,omitempty"`
+	BitcoinPubkey    string              `protobuf:"bytes,16,opt,name=bitcoinPubkey,proto3" json:"bitcoinPubkey,omitempty"`
+	LastModified     string              `protobuf:"bytes,17,opt,name=lastModified,proto3" json:"lastModified,omitempty"` //in marketplace it is *timestamp.Timestamp from protocol buffer, but it is problematic in parsing to json.
+	Currencies       []string            `protobuf:"bytes,18,rep,name=currencies,proto3" json:"currencies,omitempty"`
 }
 
 // RPCInterface is an interface to OB
