@@ -51,7 +51,7 @@ func CreateNewDatabaseTables(db *sql.DB) (*SQLDatastore, error) {
 		"slug VARCHAR(70), title VARCHAR(140), tags VARCHAR(410), categories VARCHAR(410), contractType VARCHAR(20), " +
 		"format VARCHAR(20), description TEXT, thumbnail VARCHAR(260), language VARCHAR(20), priceAmount BIGINT, " +
 		"priceCurrency VARCHAR(10), priceModifier INT, nsfw TINYINT(1), averageRating DECIMAL(3,2), ratingCount INT, " +
-		"coinType VARCHAR(20), coinDivisibility INT, normalizedPrice DECIMAL(40, 20), PRIMARY KEY (id))")
+		"acceptedCurrencies VARCHAR(40), coinType VARCHAR(20), coinDivisibility INT, normalizedPrice DECIMAL(40, 20), PRIMARY KEY (id))")
 	if err != nil {
 		return nil, err
 	}
@@ -269,7 +269,8 @@ func (d *SQLDatastore) SaveNode(n crawling.Node) error {
 func (d *SQLDatastore) AddUninitializedNodes(nodes []crawling.Node) error {
 	for n := range nodes {
 		err := func() error {
-			tx, err := d.db.Begin(); if err != nil {
+			tx, err := d.db.Begin();
+			if err != nil {
 				return err
 			}
 			defer func() {
@@ -287,11 +288,13 @@ func (d *SQLDatastore) AddUninitializedNodes(nodes []crawling.Node) error {
 			}
 			defer insertStatement.Close()
 
-			result, err := tx.Stmt(insertStatement).Exec(nodes[n].ID); if err != nil {
+			result, err := tx.Stmt(insertStatement).Exec(nodes[n].ID);
+			if err != nil {
 				return err
 			}
 
-			resultInt, err := result.RowsAffected(); if err != nil {
+			resultInt, err := result.RowsAffected();
+			if err != nil {
 				return err
 			}
 			err = tx.Commit()
@@ -371,11 +374,11 @@ func (d *SQLDatastore) AddItemsForNode(peerID string, items []crawling.Item) err
 		err = func() error {
 			insertIntoItems, err := tx.Prepare("INSERT INTO items (peerID, hash, score, slug, title, tags, categories, contractType, format, " +
 				"description, thumbnail, language, priceAmount, priceCurrency, priceModifier, nsfw, averageRating, ratingCount, " +
-				"coinType, coinDivisibility, normalizedPrice) " +
-				"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE " +
+				"acceptedCurrencies, coinType, coinDivisibility, normalizedPrice) " +
+				"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE " +
 				"score=?, slug=?, title=?, tags=?, categories=?, contractType=?, format=?, description=?, thumbnail=?, language=?, " +
-				"priceAmount=?, priceCurrency=?, priceModifier=?, nsfw=?, averageRating=?, ratingCount=?, coinType=?," +
-				"coinDivisibility=?, normalizedPrice=?")
+				"priceAmount=?, priceCurrency=?, priceModifier=?, nsfw=?, averageRating=?, ratingCount=?, acceptedCurrencies=?, " +
+				"coinType=?, coinDivisibility=?, normalizedPrice=?")
 			if err != nil {
 				return err
 			}
@@ -401,6 +404,7 @@ func (d *SQLDatastore) AddItemsForNode(peerID string, items []crawling.Item) err
 				items[i].NSFW,
 				items[i].AverageRating,
 				items[i].RatingCount,
+				strings.Join(items[i].AcceptedCurrencies, ","),
 				items[i].CoinType,
 				items[i].CoinDivisibility,
 				items[i].NormalizedPrice,
@@ -422,6 +426,7 @@ func (d *SQLDatastore) AddItemsForNode(peerID string, items []crawling.Item) err
 				items[i].NSFW,
 				items[i].AverageRating,
 				items[i].RatingCount,
+				strings.Join(items[i].AcceptedCurrencies, ","),
 				items[i].CoinType,
 				items[i].CoinDivisibility,
 				items[i].NormalizedPrice,

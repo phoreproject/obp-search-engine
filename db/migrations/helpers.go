@@ -6,7 +6,7 @@ import (
 )
 
 const DatabaseVersionKeyName = "schema_version"
-const DatabaseVersion = 2 // added 'format' field into items
+const DatabaseVersion = 3 // added 'acceptedCurrencies' field into items
 
 // string concatenation is intended in functions below, because tx.Prepare cannot handle this syntax :(
 func AddColumn(tx sql.Tx, table string, columnName string, columnType string) error {
