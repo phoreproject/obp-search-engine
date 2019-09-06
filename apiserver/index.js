@@ -239,6 +239,7 @@ app.get('/search/listings', async (req, res) => {
                     nsfw: r.nsfw,
                     averageRating: parseFloat(r.averageRating),
                     ratingCount: r.ratingCount,
+                    acceptedCurrencies: r.acceptedCurrencies.split(','),
                     coinType: r.coinType,
                     coinDivisibility: r.coinDivisibility,
                     normalizedPrice: r.normalizedPrice
