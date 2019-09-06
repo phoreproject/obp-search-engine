@@ -167,8 +167,16 @@ app.get('/search/listings', async (req, res) => {
             }
         });
 
+
+        const safeSplit = function (str) {
+            if (str === undefined) {
+                return [];
+            }
+            return str.split(',');
+        };
+
         for (const r of itemQueryOutput.rows) {
-            let thumbnails = r.thumbnail.split(',');
+            let thumbnails = safeSplit(r.thumbnail);
             result.results.results.push({
                 type: 'listing',
                 relationships: {
@@ -218,8 +226,8 @@ app.get('/search/listings', async (req, res) => {
                     hash: r.hash,
                     slug: r.slug,
                     title: r.title,
-                    tags: r.tags.split(','),
-                    categories: r.categories.split(','),
+                    tags: safeSplit(r.tags),
+                    categories: safeSplit(r.categories),
                     contractType: r.contractType,
                     format: r.format,
                     description: r.description,
@@ -239,7 +247,7 @@ app.get('/search/listings', async (req, res) => {
                     nsfw: r.nsfw,
                     averageRating: parseFloat(r.averageRating),
                     ratingCount: r.ratingCount,
-                    acceptedCurrencies: r.acceptedCurrencies.split(','),
+                    acceptedCurrencies: safeSplit(r.acceptedCurrencies),
                     coinType: r.coinType,
                     coinDivisibility: r.coinDivisibility,
                     normalizedPrice: r.normalizedPrice
