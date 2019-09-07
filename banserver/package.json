@@ -1,6 +1,6 @@
 {
     "name": "banserver",
-    "version": "2.2.0",
+    "version": "2.6.3",
     "description": "Description for banserver",
     "scripts": {
         "start": "node app.js"
