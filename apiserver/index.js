@@ -33,7 +33,9 @@ app.get('/search/listings', async (req, res) => {
 
         itemQueryOptions.limit = ps;
         itemQueryOptions.offset = ps * page;
-        itemQueryOptions.where = {};
+        itemQueryOptions.where = {
+            blocked: false
+        };
         if (queryNSFW === false) { // return no nsfw results or all results
             itemQueryOptions.where.nsfw = queryNSFW;
         }
