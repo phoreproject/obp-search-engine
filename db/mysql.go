@@ -54,7 +54,8 @@ func CreateNewDatabaseTables(db *sql.DB) (*SQLDatastore, error) {
 		"slug VARCHAR(70), title VARCHAR(140), tags VARCHAR(410), categories VARCHAR(410), contractType VARCHAR(20), " +
 		"format VARCHAR(20), description TEXT, thumbnail VARCHAR(260), language VARCHAR(20), priceAmount BIGINT, " +
 		"priceCurrency VARCHAR(10), priceModifier INT, nsfw TINYINT(1), averageRating DECIMAL(3,2), ratingCount INT, " +
-		"acceptedCurrencies VARCHAR(40), coinType VARCHAR(20), coinDivisibility INT, normalizedPrice DECIMAL(40, 20), PRIMARY KEY (id))")
+		"acceptedCurrencies VARCHAR(40), coinType VARCHAR(20), coinDivisibility INT, normalizedPrice DECIMAL(40, 20), blocked TINYINT(1), " +
+		"PRIMARY KEY (id))")
 	if err != nil {
 		return nil, err
 	}
@@ -380,11 +381,11 @@ func (d *SQLDatastore) AddItemsForNode(peerID string, items []crawling.Item) err
 		err = func() error {
 			insertIntoItems, err := tx.Prepare("INSERT INTO items (peerID, hash, score, slug, title, tags, categories, contractType, format, " +
 				"description, thumbnail, language, priceAmount, priceCurrency, priceModifier, nsfw, averageRating, ratingCount, " +
-				"acceptedCurrencies, coinType, coinDivisibility, normalizedPrice) " +
-				"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE " +
+				"acceptedCurrencies, coinType, coinDivisibility, normalizedPrice, blocked) " +
+				"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE " +
 				"score=?, slug=?, title=?, tags=?, categories=?, contractType=?, format=?, description=?, thumbnail=?, language=?, " +
 				"priceAmount=?, priceCurrency=?, priceModifier=?, nsfw=?, averageRating=?, ratingCount=?, acceptedCurrencies=?, " +
-				"coinType=?, coinDivisibility=?, normalizedPrice=?")
+				"coinType=?, coinDivisibility=?, normalizedPrice=?, blocked=?")
 			if err != nil {
 				return err
 			}
@@ -414,6 +415,7 @@ func (d *SQLDatastore) AddItemsForNode(peerID string, items []crawling.Item) err
 				items[i].CoinType,
 				items[i].CoinDivisibility,
 				items[i].NormalizedPrice,
+				items[i].Blocked,
 
 				// on duplicate repeat
 				items[i].Score,
@@ -436,6 +438,7 @@ func (d *SQLDatastore) AddItemsForNode(peerID string, items []crawling.Item) err
 				items[i].CoinType,
 				items[i].CoinDivisibility,
 				items[i].NormalizedPrice,
+				items[i].Blocked,
 			)
 			if err != nil {
 				return err
@@ -463,6 +466,34 @@ func (d *SQLDatastore) AddItemsForNode(peerID string, items []crawling.Item) err
 			return err
 		}
 	}
+
+	return err
+}
+
+func (d *SQLDatastore) UpdateNodeStatus(id string, field string, value bool) error {
+	tx, err := d.db.Begin()
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		if p := recover(); p != nil {
+			tx.Rollback()
+			log.Panic(p)
+		} else if err != nil {
+			tx.Rollback() // err is non-nil; don't change it
+		} else {
+			err = tx.Commit() // err is nil; if Commit returns error update err
+		}
+	}()
+
+	updateStatement, err := tx.Prepare("UPDATE nodes SET ? = ? WHERE id = ? LIMIT 1")
+	if err != nil {
+		return err
+	}
+	defer updateStatement.Close()
+
+	_, err = tx.Stmt(updateStatement).Exec(field, value, id)
 
 	return err
 }

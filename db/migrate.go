@@ -16,6 +16,7 @@ var Migrations = []Migration{
 	migrations.Migration001{},
 	migrations.Migration002{},
 	migrations.Migration003{},
+	migrations.Migration004{},
 }
 
 func Migrate(db *sql.DB) error {

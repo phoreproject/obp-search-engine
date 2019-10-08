@@ -13,6 +13,7 @@ type Datastore interface {
 	GetNode(string) (*Node, error)
 	AddItemsForNode(owner string, items []Item) error
 	SaveNodeUninitialized(Node) error
+	UpdateNodeStatus(string, string, bool) error
 }
 
 // Node is a representation of a single node on the network.
@@ -64,6 +65,7 @@ type Item struct {
 	CoinType           string    `json:"coinType"`
 	CoinDivisibility   uint32    `json:"coinDivisibility"`
 	NormalizedPrice    float64   `json:"normalizedPrice"` // it is missing in api
+	Blocked            bool      `json:"blocked'"` // it is missing in api - use only by search engine
 }
 
 type ProfileSocialAccount struct {
