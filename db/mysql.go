@@ -487,13 +487,13 @@ func (d *SQLDatastore) UpdateNodeStatus(id string, field string, value bool) err
 		}
 	}()
 
-	updateStatement, err := tx.Prepare("UPDATE nodes SET ? = ? WHERE id = ? LIMIT 1")
+	updateStatement, err := tx.Prepare("UPDATE nodes SET " + field + " = ? WHERE id = ? LIMIT 1")
 	if err != nil {
 		return err
 	}
 	defer updateStatement.Close()
 
-	_, err = tx.Stmt(updateStatement).Exec(field, value, id)
+	_, err = tx.Stmt(updateStatement).Exec(value, id)
 
 	return err
 }

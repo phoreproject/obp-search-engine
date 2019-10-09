@@ -5,10 +5,12 @@ import (
 	"database/sql"
 	"encoding/json"
 	"flag"
+	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/phoreproject/obp-search-engine/crawling"
 	"github.com/phoreproject/obp-search-engine/db"
 	"github.com/phoreproject/obp-search-engine/rpc"
+	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"io"
 	"net/http"
@@ -41,6 +43,10 @@ func checkListings(url string, items []crawling.Item) ([]int, error) {
 		return nil, err
 	}
 	decoder := json.NewDecoder(resp.Body)
+
+	if resp.StatusCode != 200 {
+		return nil, errors.New(fmt.Sprintf("Server returned %s", resp.Status))
+	}
 
 	var response []int
 	err = decoder.Decode(&response)
@@ -115,29 +121,35 @@ func crawlerMainLoop(maxParallelCoroutines int, chunkSize int, httpClassifierUrl
 								log.Debugf("Check finished with %s", output)
 
 								if len(output) == len(items) {
-									bannedCnt := 0.0
+									bannedCnt:= 0
 									for index, blocked := range output {
 										if blocked != 0 {
-											bannedCnt += 1.0
+											bannedCnt += 1
 										}
 										items[index].Blocked = blocked > 0
 									}
 
-									// automatically ban also entire owner store
-									if float64(len(items))/bannedCnt > BanThreshold {
-										err := crawler.DB.UpdateNodeStatus(localNodeID, "blocked", true)
-										if err != nil {
-											log.Warning("Cannot update node status banned = true for node %s", localNodeID)
-										}
+									if bannedCnt == 0 || float64(len(items))/float64(bannedCnt) < AllowThreshold { // automatically list owner
 										// automatically list stores with low level of banned listings
-									} else if float64(len(items))/bannedCnt < AllowThreshold { // automatically list owner
 										err := crawler.DB.UpdateNodeStatus(localNodeID, "listed", true)
 										if err != nil {
 											log.Warning("Cannot update node status listed = true for node %s", localNodeID)
+											log.Error(err)
+										} else {
+											log.Debugf("Updated node status listed = true for node %s", localNodeID)
+										}
+									} else if float64(len(items))/float64(bannedCnt) > BanThreshold {
+										// automatically ban also entire owner store
+										err := crawler.DB.UpdateNodeStatus(localNodeID, "blocked", true)
+										if err != nil {
+											log.Warning("Cannot update node status banned = true for node %s", localNodeID)
+											log.Error(err)
+										} else {
+											log.Debugf("Updated node status banned = true for node %s", localNodeID)
 										}
 									} else {
-										log.Debugf("Node %s banned listing threshold in range (%d, %d) - cannot decide automatically",
-											localNodeID, AllowThreshold, BanThreshold)
+										log.Debugf("Node %s banned listing threshold in range (%f < %f < %f) - cannot decide automatically",
+											localNodeID, AllowThreshold, float64(len(items))/float64(bannedCnt), BanThreshold)
 									}
 								}
 							}
