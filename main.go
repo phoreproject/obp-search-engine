@@ -112,7 +112,7 @@ func crawlerMainLoop(maxParallelCoroutines int, chunkSize int, httpClassifierUrl
 								return
 							}
 
-							if httpClassifierUrl != "" {
+							if httpClassifierUrl != "" && len(items) > 0 {
 								log.Debugf("Checking listings status using external service")
 								output, err := checkListings(httpClassifierUrl, items)
 								if err != nil {
