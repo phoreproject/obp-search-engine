@@ -23,7 +23,7 @@ const (
 	AllowThreshold = 0.1
 )
 
-func checkListings(url string, items []crawling.Item) ([]bool, error) {
+func checkListings(url string, items []crawling.Item) ([]int, error) {
 	c := &http.Client{Timeout: time.Second * 10}
 
 	s, err := json.Marshal(items)
@@ -42,7 +42,7 @@ func checkListings(url string, items []crawling.Item) ([]bool, error) {
 	}
 	decoder := json.NewDecoder(resp.Body)
 
-	var response []bool
+	var response []int
 	err = decoder.Decode(&response)
 	if err != nil {
 		return nil, err
@@ -116,11 +116,11 @@ func crawlerMainLoop(maxParallelCoroutines int, chunkSize int, httpClassifierUrl
 
 								if len(output) == len(items) {
 									bannedCnt := 0.0
-									for index, element := range output {
-										if element {
+									for index, blocked := range output {
+										if blocked != 0 {
 											bannedCnt += 1.0
 										}
-										items[index].Blocked = element
+										items[index].Blocked = blocked > 0
 									}
 
 									// automatically ban also entire owner store
