@@ -1,8 +1,8 @@
 import argparse
 import json
+import threading
 
 from flask import Flask, request
-import threading
 
 from listingfiltering.learnNetwork import Network
 

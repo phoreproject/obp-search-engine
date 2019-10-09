@@ -1,16 +1,12 @@
-import json
-import sys
 import pprint
-import mysql.connector
-import numpy as np
-import pandas as pd
-import nltk
-from nltk.corpus import stopwords
 import string
+
+import mysql.connector
+from nltk.corpus import stopwords
 from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
 from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import MultinomialNB
-from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
 
 
 class Network(object):
@@ -175,10 +171,7 @@ class Network(object):
         filtered_listings = list()
         for listing in listings:
             filtered_listings.append(_filter_listings(listing))
-        out = self._check_prediction(filtered_listings)
-        print(out)
-        print(type(out))
-        return out.tolist()
+        return self._check_prediction(filtered_listings).tolist()
 
     @staticmethod
     def create_mysql_ctx(args):
