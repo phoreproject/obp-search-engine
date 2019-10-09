@@ -1,4 +1,5 @@
 import argparse
+import json
 
 from flask import Flask, request
 import threading
@@ -22,13 +23,11 @@ def server(args, net):
 
     @api.route('/checkListing', methods=['POST'])
     def process_listing():
-        data = request.json
-        return net.test_listing(data)
+        return json.dumps(net.test_listing(request.json)[0])
 
     @api.route('/checkListings', methods=['POST'])
     def process_listings():
-        data = request.json
-        return net.test_listing(data)
+        return json.dumps(net.test_listing(request.json))
 
     api.run(port=args.port)
 

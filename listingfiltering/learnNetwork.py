@@ -47,13 +47,14 @@ class Network(object):
         classifier.fit(X_train, y_train)
         return classifier
 
-    def _check_prediction(self, listing):
-        return self._classifier.predict(CountVectorizer(analyzer=Network.process_text).fit_transform([listing]))
+    def _check_prediction(self, listings):
+        return self._classifier.predict(CountVectorizer(analyzer=Network.process_text).fit_transform(listings))
 
     def _mark_item_is_banned(self, cursor, item, is_blocked):
         try:
             q = "UPDATE items SET isBlocked = %s WHERE hash = %s LIMIT 1"
             cursor.execute(q, (is_blocked, item['hash']))
+
         except mysql.connector.Error as err:
             pass
 
@@ -70,11 +71,11 @@ class Network(object):
             'isBlocked': item[8],
         }
 
-    def _append_train_data(self, item, is_illegal):
+    def _append_train_data(self, item, is_blocked):
         del item['hash']
         del item['isBlocked']
         self.train_data['text'].append(item)
-        self.train_data['isBlocked'].append(is_illegal)
+        self.train_data['isBlocked'].append(is_blocked)
 
     def _train_and_test_network(self):
         messages_bow = CountVectorizer(analyzer=Network.process_text).fit_transform(self.train_data['text'])
@@ -159,9 +160,25 @@ class Network(object):
 
         self._train_and_test_network()
 
-    def test_listing(self, listing):
-        block = self._check_prediction(listing)[0]
-        return json.dumps({"blocked": block})
+    def test_listing(self, listings):
+        def _filter_listings(item):
+            return {
+                'title': item['title'],
+                'tags': item['tags'],
+                'categories': item['categories'],
+                'contractType': item['contractType'],
+                'format': item['format'],
+                'description': item['description'],
+                'nsfw': item['nsfw'],
+            }
+
+        filtered_listings = list()
+        for listing in listings:
+            filtered_listings.append(_filter_listings(listing))
+        out = self._check_prediction(filtered_listings)
+        print(out)
+        print(type(out))
+        return out.tolist()
 
     @staticmethod
     def create_mysql_ctx(args):
