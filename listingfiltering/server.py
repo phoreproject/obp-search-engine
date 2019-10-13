@@ -4,7 +4,7 @@ import threading
 
 from flask import Flask, request
 
-from listingfiltering.learnNetwork import Network
+from learnNetwork import Network
 
 
 def parse_args():
