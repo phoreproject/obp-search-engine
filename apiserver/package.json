@@ -7,8 +7,7 @@
     "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "meyer9",
-  "license": "ISC",
+  "author": "meyer9 & anchaj",
   "dependencies": {
     "express": "^4.16.2",
     "moment": "^2.21.0",

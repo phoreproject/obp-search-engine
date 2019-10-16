@@ -2,8 +2,8 @@
 
 const {google} = require('googleapis'),
     readline = require('readline'),
-    fs = require('fs');
-
+    fs = require('fs'),
+    Base64 = require('js-base64').Base64;
 
 const SCOPES = ['https://www.googleapis.com/auth/gmail.send'];
 const TOKEN_PATH = 'token.json';
@@ -13,19 +13,29 @@ function loadCredentials() {
     return JSON.parse(content);
 }
 
+function createEmail(subject, message, to, from='notifier@phore.io') {
+    let email = ["Content-Type: text/plain; charset=\"UTF-8\"\n",
+        "MIME-Version: 1.0\n",
+        "Content-Transfer-Encoding: 7bit\n",
+        "to: ", to, "\n",
+        "from: ", from, "\n",
+        "subject: ", subject, "\n\n",
+        message
+    ].join('');
+    return Base64.encodeURI(email);
+}
+
 async function sendEmail(email) {
     const credentials = loadCredentials();
     const auth = await authorize(credentials);
     const gmail = google.gmail({version: 'v1', auth});
 
-    let base64EncodedEmail = Base64.encodeURI(email);
-    gmail.client.gmail.users.messages.send({
+    gmail.users.messages.send({
         userId: 'me',
         resource: {
-            raw: base64EncodedEmail
+            raw: email
         }
-    }).then(function () { console.log("done!")});
-
+    });
 }
 
 async function authorize(credentials) {
@@ -78,3 +88,8 @@ function getNewToken(oAuth2Client) {
         });
     });
 }
+
+module.exports({
+    createEmail: createEmail,
+    sendEmail: sendEmail
+});

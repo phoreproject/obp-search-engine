@@ -3,7 +3,8 @@ const express = require('express'),
     http = require('http'),
     path = require('path'),
     db = require('./models'),
-    request = require('request');
+    request = require('request'),
+    gmail = require('./gmailApi');
 
 const basicAuth = require('express-basic-auth');
 
@@ -99,6 +100,87 @@ app.get('/moderators', (req, res) => {
     });
 });
 
+
+class RpcStatusChecker {
+    constructor() {
+        this.timeOfLastRPCcheck = 0;
+        this.timeOfLastChainzCheck = 0;
+        this.timeOfLastEmailSent = 0;
+
+        this.rpcError = '';
+        this.rpcLastBlock = 0;
+        this.chainzError = '';
+        this.chainzLastBlock = 0;
+    }
+
+    init() {
+        setInterval(() => {
+            request.post("https://rpc2.phore.io/rpc",
+                {
+                    json: {"jsonrpc": "2.0", "method": 'getblockcount', "params": [], "id": 1}
+                },
+                (err, resp, body) => {
+                    if (err) {
+                        this.rpcError = err.toString();
+                        res.render('statistics', {tags: tags.map((tag) => tag.toJSON()), err: err});
+                    } else if (resp.statusCode !== 200) {
+                        this.rpcError = 'RPC returns status code ' + resp.statusCode;
+                    } else {
+                        this.rpcError= '';
+                        this.rpcLastBlock = body.result;
+                        this.timeOfLastRPCcheck = Date.now();
+                    }
+                    this.check_error();
+                });
+        }, 60 * 1000);
+
+
+        setInterval(() => {
+            request.post("https://chainz.cryptoid.info/phr/api.dws?q=getblockcount", (err, resp, body) => {
+                if (err) {
+                    this.chainzError = "chainz.cryptoid.info returns error " + err;
+                } else if (resp.statusCode !== 200) {
+                    this.chainzError = "chainz.cryptoid.info returns status code " + err;
+                } else {
+                    this.chainzError = '';
+                    this.chainzLastBlock = parseInt(body, 10);
+                    this.timeOfLastChainzCheck = Date.now();
+                }
+                this.check_error();
+            });
+        }, 60 * 1000);
+
+        return this;
+    }
+
+    can_send_email() {
+        return Date.now() - this.timeOfLastEmailSent > 15 * 60 * 1000;
+    }
+
+    check_error() {
+        if ((this.rpcError !== '' || this.chainzError !== '') && this.can_send_email()) {
+            let errMsg = '';
+            if (this.rpcError !== '') {
+                errMsg += 'An error occurred in RPC: ' + this.rpcError + '\n';
+            } else {
+                errMsg += 'RPC works correctly, but '
+            }
+
+            if (this.chainzError !== '') {
+                errMsg += 'An error occured in Chainz: ' + this.chainzError + '\n';
+            } else {
+                errMsg += 'Chainz works correctly.'
+            }
+
+            gmail.sendEmail(gmail.createEmail("An error in ban manager occurred", errMsg, 'anchaj@phore.io'));
+            this.timeOfLastEmailSent = Date.now();
+        }
+    }
+}
+
+
+const STATUS_CHECKER = RpcStatusChecker().init();
+
 app.get('/statistics', async (req, res) => {
     const tags = await db.nodes.findAll({
         group: ['userAgent'],
@@ -107,42 +189,13 @@ app.get('/statistics', async (req, res) => {
             ['userAgent', 'DESC']
         ]
     });
-    request.post("https://rpc.phore.io/rpc",
-        {
-            json: {"jsonrpc": "2.0", "method": 'getblockcount', "params": [], "id": 1}
-        },
-        (err, resp, body) => {
 
-
-            if (err) {
-                res.render('statistics', {tags: tags.map((tag) => tag.toJSON()), err: err});
-            } else if (resp.statusCode !== 200) {
-                res.render('statistics', {
-                    tags: tags.map((tag) => tag.toJSON()),
-                    err: 'RPC returns status code ' + resp.statusCode
-                });
-            } else {
-                request.post("https://chainz.cryptoid.info/phr/api.dws?q=getblockcount", (errChainz, respChainz, bodyChainz) => {
-                    if (errChainz) {
-                        res.render('statistics', {
-                            tags: tags.map((tag) => tag.toJSON()), err: "RPC works (best block is"
-                                + body.result + "), but chainz.cryptoid.info returns error " + err
-                        });
-                    } else if (respChainz.statusCode !== 200) {
-                        res.render('statistics', {
-                            tags: tags.map((tag) => tag.toJSON()), err: "RPC works (best block is"
-                                + body.result + "), but chainz.cryptoid.info returns status code " + err
-                        });
-                    } else {
-                        res.render('statistics', {
-                            tags: tags.map((tag) => tag.toJSON()),
-                            rpcBlockCount: body.result, chainzBlockCount: parseInt(bodyChainz, 10),
-                            diff: parseInt(bodyChainz, 10) - body.result
-                        });
-                    }
-                });
-            }
-        });
+    res.render('statistics', {
+        tags: tags.map((tag) => tag.toJSON()),
+        rpcBlockCount: STATUS_CHECKER.rpcLastBlock,
+        chainzBlockCount: STATUS_CHECKER.chainzLastBlock,
+        diff: STATUS_CHECKER.chainzLastBlock - STATUS_CHECKER.rpcLastBlock
+    });
 });
 
 app.get('/list/:id', (req, res) => {
