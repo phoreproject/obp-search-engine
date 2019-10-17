@@ -179,7 +179,7 @@ class RpcStatusChecker {
 }
 
 
-const STATUS_CHECKER = RpcStatusChecker().init();
+const STATUS_CHECKER = new RpcStatusChecker().init();
 
 app.get('/statistics', async (req, res) => {
     const tags = await db.nodes.findAll({

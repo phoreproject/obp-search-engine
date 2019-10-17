@@ -89,7 +89,7 @@ function getNewToken(oAuth2Client) {
     });
 }
 
-module.exports({
+module.exports = {
     createEmail: createEmail,
     sendEmail: sendEmail
-});
+};
