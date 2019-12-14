@@ -1,3 +1,5 @@
+const package = require('./package.json');
+
 module.exports = {
     'name': 'Phore Search',
 
@@ -8,6 +10,8 @@ module.exports = {
         'listings': 'https://search.phore.io/search/listings',
         'topTags': 'https://search.phore.io/search/toptags'
     },
+
+    'version': package.version,
 
     'options': {
         "a0_shipping":{
