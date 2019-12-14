@@ -37,6 +37,8 @@ module.exports = function (sequelize, DataTypes) {
         coinDivisibility: DataTypes.INTEGER,
         normalizedPrice: DataTypes.DECIMAL(40, 20),
         blocked: DataTypes.BOOLEAN,
+
+        testnet: DataTypes.BOOLEAN,
     }, {
         freezeTableName: true,
         timestamps: false

@@ -30,11 +30,13 @@ app.get('/search/listings', async (req, res) => {
         const queryRating = Number(req.query.rating || "0");
         const queryModerators = req.query.b2_moderators;
         const queryContractType = req.query.type;
+        const testnet = (req.query.testnet === 'true') || false;
 
         itemQueryOptions.limit = ps;
         itemQueryOptions.offset = ps * page;
         itemQueryOptions.where = {
-            blocked: false
+            blocked: false,
+            testnet: testnet,
         };
         if (queryNSFW === false) { // return no nsfw results or all results
             itemQueryOptions.where.nsfw = queryNSFW;
