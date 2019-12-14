@@ -64,8 +64,9 @@ type Item struct {
 	AcceptedCurrencies []string  `json:"acceptedCurrencies"`
 	CoinType           string    `json:"coinType"`
 	CoinDivisibility   uint32    `json:"coinDivisibility"`
+	Testnet            bool      `json:"testnet"`
 	NormalizedPrice    float64   `json:"normalizedPrice"` // it is missing in api
-	Blocked            bool      `json:"blocked"` // it is missing in api - use only by search engine
+	Blocked            bool      `json:"blocked"`         // it is missing in api - use only by search engine
 }
 
 type ProfileSocialAccount struct {
