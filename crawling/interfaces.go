@@ -67,6 +67,7 @@ type Item struct {
 	Testnet            bool      `json:"testnet"`
 	NormalizedPrice    float64   `json:"normalizedPrice"` // it is missing in api
 	Blocked            bool      `json:"blocked"`         // it is missing in api - use only by search engine
+	ClassifiedManually bool      `json:"classifiedManually"` // it is missing in api - use only by search engine
 }
 
 type ProfileSocialAccount struct {

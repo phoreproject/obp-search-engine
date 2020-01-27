@@ -121,7 +121,7 @@ func crawlerMainLoop(maxParallelCoroutines int, chunkSize int, httpClassifierUrl
 								log.Debugf("Check finished with %s", output)
 
 								if len(output) == len(items) {
-									bannedCnt:= 0
+									bannedCnt := 0
 									for index, blocked := range output {
 										if blocked != 0 {
 											bannedCnt += 1
