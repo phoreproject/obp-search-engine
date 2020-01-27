@@ -48,7 +48,7 @@ class Network(object):
 
     def _mark_item_is_banned(self, cursor, item, is_blocked):
         try:
-            q = "UPDATE items SET isBlocked = %s WHERE hash = %s LIMIT 1"
+            q = "UPDATE items SET isBlocked = %s, classifiedManually = 1 WHERE hash = %s LIMIT 1"
             cursor.execute(q, (is_blocked, item['hash']))
 
         except mysql.connector.Error as err:
