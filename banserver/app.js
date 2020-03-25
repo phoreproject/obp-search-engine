@@ -4,7 +4,8 @@ const express = require('express'),
     path = require('path'),
     db = require('./models'),
     request = require('request'),
-    gmail = require('./gmailApi');
+    gmail = require('./gmailApi'),
+    package_json = require('./package.json');
 
 const basicAuth = require('express-basic-auth');
 
@@ -194,7 +195,8 @@ app.get('/statistics', async (req, res) => {
         tags: tags.map((tag) => tag.toJSON()),
         rpcBlockCount: STATUS_CHECKER.rpcLastBlock,
         chainzBlockCount: STATUS_CHECKER.chainzLastBlock,
-        diff: STATUS_CHECKER.chainzLastBlock - STATUS_CHECKER.rpcLastBlock
+        diff: STATUS_CHECKER.chainzLastBlock - STATUS_CHECKER.rpcLastBlock,
+        version: package_json.version,
     });
 });
 
