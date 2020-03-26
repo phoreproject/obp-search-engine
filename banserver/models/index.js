@@ -1,7 +1,7 @@
 'use strict';
 const fs = require('fs'),
     path = require('path'),
-    Sequelize = require('sequelize'),
+    { Sequelize, Op } = require('sequelize'),
     lodash = require('lodash'),
     db = {};
 
@@ -24,5 +24,6 @@ Object.keys(db).forEach(function (modelName) {
 
 module.exports = lodash.extend({
     sequelize: sequelize,
-    Sequelize: Sequelize
+    Sequelize: Sequelize,
+    sequelize_Op: Op,
 }, db);

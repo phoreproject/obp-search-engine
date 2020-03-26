@@ -45,7 +45,7 @@ app.get('/search/listings', async (req, res) => {
         // create query to filter by rating
         if (queryRating !== 0) {
             itemQueryOptions.where.averageRating = {
-                [ORM.sequelize.Op.gte]: {
+                [ORM.sequelize_Op.gte]: {
                     5: 4.75,
                     4: 4,
                     3: 3,
@@ -79,15 +79,15 @@ app.get('/search/listings', async (req, res) => {
             // const words = req.query.q.replace(/[^\w]/g, '').split(' ') old version, why this replace pattern?
             const words = req.query.q.split(' ').map((word) => {
                 return {
-                    [ORM.sequelize.Op.like]: '%' + word + '%'
+                    [ORM.sequelize_Op.like]: '%' + word + '%'
                 };
             });
             const oneOfWordsInTitle = {
-                [ORM.sequelize.Op.or]: words
+                [ORM.sequelize_Op.or]: words
             };
 
             itemQueryOptions.where = {
-                [ORM.sequelize.Op.or]: {
+                [ORM.sequelize_Op.or]: {
                     title: oneOfWordsInTitle,
                     tags: oneOfWordsInTitle
                 }
@@ -96,7 +96,7 @@ app.get('/search/listings', async (req, res) => {
 
         let nodeQueryWhere = {
             lastUpdated: {
-                [ORM.sequelize.Op.gt]: moment(new Date()).subtract(8, 'hours').toDate()
+                [ORM.sequelize_Op.gt]: moment(new Date()).subtract(8, 'hours').toDate()
             },
             listed: true,
             blocked: false
@@ -137,7 +137,7 @@ app.get('/search/listings', async (req, res) => {
                 where:
                     {
                         peerID: {
-                            [ORM.sequelize.Op.eq]: peerIDs[i]
+                            [ORM.sequelize_Op.eq]: peerIDs[i]
                         }
                     }
             };

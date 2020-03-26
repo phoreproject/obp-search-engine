@@ -58,7 +58,7 @@ class TagsCache {
 
         let nodeQueryWhere = {
             lastUpdated: {
-                [ORM.sequelize.Op.gt]: moment(new Date()).subtract(24, 'hours').toDate()
+                [ORM.sequelize_Op.gt]: moment(new Date()).subtract(24, 'hours').toDate()
             },
             listed: true,
             blocked: false

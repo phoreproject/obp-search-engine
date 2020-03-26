@@ -56,7 +56,7 @@ function handleUnlisted(req, res) {
         where: {
             listed: false,
             blocked: false,
-            listingCount: {[db.sequelize.Op.ne]: 0},
+            listingCount: {[db.sequelize_Op.ne]: 0},
         },
         order: [
             ['name', 'DESC']
