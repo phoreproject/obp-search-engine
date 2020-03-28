@@ -201,7 +201,7 @@ app.get('/statistics', async (req, res) => {
 });
 
 app.get('/list/:id', (req, res) => {
-    db.nodes.find({
+    db.nodes.findOne({
         where: {
             id: req.params['id']
         }
@@ -214,7 +214,7 @@ app.get('/list/:id', (req, res) => {
 });
 
 app.get('/unlist/:id', (req, res) => {
-    db.nodes.find({
+    db.nodes.findOne({
         where: {
             id: req.params['id']
         }
@@ -227,7 +227,7 @@ app.get('/unlist/:id', (req, res) => {
 });
 
 app.get('/ban/:id', (req, res) => {
-    db.nodes.find({
+    db.nodes.findOne({
         where: {
             id: req.params['id']
         }
@@ -240,7 +240,7 @@ app.get('/ban/:id', (req, res) => {
 });
 
 app.get('/unban/:id', (req, res) => {
-    db.nodes.find({
+    db.nodes.findOne({
         where: {
             id: req.params['id']
         }
@@ -254,7 +254,7 @@ app.get('/unban/:id', (req, res) => {
 
 async function setIsVerified(req, res, value) {
     db.sequelize.transaction({}, async (transaction) => {
-        let moderator = await db.moderators.find({
+        let moderator = await db.moderators.findOne({
             where: {
                 id: req.params['id']
             },
