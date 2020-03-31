@@ -5,7 +5,7 @@ const moment = require('moment');
 const ORM = require('./ORM.js');
 
 const MaxDefaultTags = 11;
-const UpdateIntervalDefault = 12 * 60 * 60 * 1000;
+const UpdateIntervalDefault = 5 * 60 * 1000;
 const BatchSize = 100;
 
 class TagsCache {

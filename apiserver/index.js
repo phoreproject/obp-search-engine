@@ -118,7 +118,7 @@ app.get('/search/listings', async (req, res) => {
             where: nodeQueryWhere
         }];
 
-        if (queryContractType !== undefined && queryContractType !== 'ANY') {
+        if (queryContractType !== undefined && queryContractType !== 'all') {
             itemQueryOptions.where.contractType = queryContractType
         }
 

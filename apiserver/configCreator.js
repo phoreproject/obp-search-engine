@@ -107,9 +107,9 @@ class ConfigCreator {
                     "label":"Type",
                     "options":[
                         {
-                            "value":"ANY",
-                            "label":"Any",
-                            "checked":this.orderType === 'ANY' || this.orderType === undefined,
+                            "value":"all",
+                            "label":"All",
+                            "checked":this.orderType === 'all' || this.orderType === undefined,
                             "default":true
                         },
                         {
