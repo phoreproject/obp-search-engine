@@ -73,6 +73,9 @@ app.get('/search/listings', async (req, res) => {
         if (itemQueryOptions.order[0].length === 0) {
             itemQueryOptions.order = undefined;
         }
+        if (queryOrderBy === 'RAND') {
+            itemQueryOptions.order = ORM.sequelize.random()
+        }
 
         // create query to filter by searching name or tag
         if (req.query.q && req.query.q !== '*') {

@@ -1,6 +1,6 @@
 {
   "name": "apiserver",
-  "version": "2.6.6",
+  "version": "2.6.7",
   "description": "Serves a basic Phore Marketplace search engine",
   "main": "index.js",
   "scripts": {
