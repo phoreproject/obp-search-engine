@@ -6,14 +6,17 @@ import (
 	"github.com/phoreproject/obp-search-engine/crawler/crawling"
 	log "github.com/sirupsen/logrus"
 	"net/http"
+	"strconv"
 )
 
 type CrawlServer struct {
 	crawlerInstance *crawling.Crawler
+	serverPort      int
 }
 
-func NewCrawlServer(crawlerInstance *crawling.Crawler) *CrawlServer {
-	return &CrawlServer{crawlerInstance: crawlerInstance}
+func NewCrawlServer(crawlerInstance *crawling.Crawler, serverPort int) *CrawlServer {
+	return &CrawlServer{crawlerInstance: crawlerInstance,
+		serverPort: serverPort}
 }
 
 func (c CrawlServer) HealthCheck(w http.ResponseWriter, r *http.Request) {
@@ -37,7 +40,7 @@ func (c CrawlServer) Serve() {
 	rtr.HandleFunc("/", c.HealthCheck)
 
 	http.Handle("/", rtr)
-	err := http.ListenAndServe(":80", nil)
+	err := http.ListenAndServe(strconv.Itoa(c.serverPort), nil)
 	if err != nil {
 		log.Error("Server serving error")
 		log.Error(err)

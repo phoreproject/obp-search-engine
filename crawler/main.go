@@ -36,6 +36,7 @@ func main() {
 	maxParallelCorutine := flag.Int("maxCoroutine", 10, "Maximum number of parallel connections")
 	httpClassifierUrl := flag.String("httpClassifierUrl", "", "Service url for classifying listings")
 	startCrawlOnDemandServer := flag.Bool("server", false, "Start http server with on demand crawl API")
+	serverPort := flag.Int("serverPort", 80, "Change http server port")
 	flag.Parse()
 
 	if *verbose {
@@ -82,7 +83,7 @@ func main() {
 	}
 
 	if *startCrawlOnDemandServer {
-		serverInstance := server.NewCrawlServer(crawler)
+		serverInstance := server.NewCrawlServer(crawler, *serverPort)
 		go serverInstance.Serve()
 	}
 
