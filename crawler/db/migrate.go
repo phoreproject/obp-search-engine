@@ -3,7 +3,7 @@ package db
 import (
 	"database/sql"
 	"fmt"
-	"github.com/phoreproject/obp-search-engine/db/migrations"
+	"github.com/phoreproject/obp-search-engine/crawler/db/migrations"
 	log "github.com/sirupsen/logrus"
 )
 

@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/phoreproject/obp-search-engine/crawling"
+	"github.com/phoreproject/obp-search-engine/crawler/crawling"
 )
 
 type MockDB struct {

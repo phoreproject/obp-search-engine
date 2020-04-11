@@ -6,8 +6,8 @@ import (
 	log "github.com/sirupsen/logrus"
 	"strings"
 
-	"github.com/phoreproject/obp-search-engine/crawling"
-	"github.com/phoreproject/obp-search-engine/db/migrations"
+	"github.com/phoreproject/obp-search-engine/crawler/crawling"
+	"github.com/phoreproject/obp-search-engine/crawler/db/migrations"
 )
 
 // start mysql container

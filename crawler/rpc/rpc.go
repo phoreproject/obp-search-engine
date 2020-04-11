@@ -6,7 +6,7 @@ import (
 	"errors"
 	"net/http"
 	"path"
-	"github.com/phoreproject/obp-search-engine/crawling"
+	"github.com/phoreproject/obp-search-engine/crawler/crawling"
 	"time"
 )
 

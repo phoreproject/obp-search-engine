@@ -3,8 +3,8 @@ package crawling_test
 import (
 	"errors"
 	"fmt"
-	"github.com/phoreproject/obp-search-engine/crawling"
-	"github.com/phoreproject/obp-search-engine/mock"
+	"github.com/phoreproject/obp-search-engine/crawler/crawling"
+	"github.com/phoreproject/obp-search-engine/crawler/mock"
 	"testing"
 )
 

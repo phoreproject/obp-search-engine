@@ -6,9 +6,9 @@ import (
 	"flag"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/phoreproject/obp-search-engine/crawling"
-	"github.com/phoreproject/obp-search-engine/db"
-	"github.com/phoreproject/obp-search-engine/rpc"
+	"github.com/phoreproject/obp-search-engine/crawler/crawling"
+	"github.com/phoreproject/obp-search-engine/crawler/db"
+	"github.com/phoreproject/obp-search-engine/crawler/rpc"
 	"strings"
 	"time"
 )

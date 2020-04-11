@@ -1,12 +1,12 @@
-package main
+package crawler
 
 import (
 	"database/sql"
 	"flag"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/phoreproject/obp-search-engine/crawling"
-	"github.com/phoreproject/obp-search-engine/db"
-	"github.com/phoreproject/obp-search-engine/rpc"
+	"github.com/phoreproject/obp-search-engine/crawler/crawling"
+	"github.com/phoreproject/obp-search-engine/crawler/db"
+	"github.com/phoreproject/obp-search-engine/crawler/rpc"
 	log "github.com/sirupsen/logrus"
 	"io"
 	"os"
@@ -34,6 +34,7 @@ func main() {
 	chunkSize := flag.Int("chunkSize", 100, "Maximum database select chunk size")
 	maxParallelCorutine := flag.Int("maxCoroutine", 10, "Maximum number of parallel connections")
 	httpClassifierUrl := flag.String("httpClassifierUrl", "", "Service url for classifying listings")
+	startCrawlOnDemandServer := flag.Bool("server", false, "Start http server with on demand crawl API")
 	flag.Parse()
 
 	if *verbose {
@@ -60,7 +61,7 @@ func main() {
 
 	config, err := r.GetConfig()
 	if err != nil {
-		log.Panic("You need to run openbazaard. Please check: https://github.com/phoreproject/openbazaar-go")
+		log.Panic("You need to run marketplaced. Please check: https://github.com/phoreproject/pm-go")
 	}
 
 	profile, err := r.GetProfile(config.PeerID)

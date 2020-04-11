@@ -147,8 +147,7 @@ func (c Crawler) classify(nodeID string, items []Item) {
 	}
 }
 
-func (c Crawler) nodeLoop(nodeID string, wg *sync.WaitGroup) {
-	defer wg.Done()
+func (c Crawler) ProcessOneNodeSync(nodeID string) {
 	log.Debugf("Processing node with id: %s\n", nodeID)
 	err := c.CrawlNode(nodeID)
 	if err != nil {
@@ -172,6 +171,11 @@ func (c Crawler) nodeLoop(nodeID string, wg *sync.WaitGroup) {
 		log.Error(err)
 		return
 	}
+}
+
+func (c Crawler) ProcessOneNodeAsync(nodeID string, wg *sync.WaitGroup) {
+	defer wg.Done()
+	c.ProcessOneNodeSync(nodeID)
 }
 
 func (c Crawler) MainLoop() {
@@ -213,7 +217,7 @@ func (c Crawler) MainLoop() {
 					processedCnt += len(lastNodes)
 					processingStart := time.Now()
 					for i := range lastNodes {
-						go c.nodeLoop(lastNodes[i], &wg)
+						go c.ProcessOneNodeAsync(lastNodes[i], &wg)
 					}
 					wg.Wait()
 					log.Debugf("Processing of %d nodes took %s.", len(lastNodes), time.Since(processingStart))
