@@ -454,7 +454,7 @@ func (d *SQLDatastore) AddItemsForNode(peerID string, items []crawling.Item) err
 				}
 				defer insertIntoModerators.Close()
 
-				for moderatorID := range items[i].ModeratorIDs {
+				for _, moderatorID := range items[i].ModeratorIDs {
 					_, err = insertIntoModerators.Exec(peerID, moderatorID, peerID, moderatorID)
 					if err != nil {
 						return err
