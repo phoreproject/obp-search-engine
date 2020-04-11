@@ -1,4 +1,4 @@
-package crawler
+package main
 
 import (
 	"database/sql"
@@ -7,6 +7,7 @@ import (
 	"github.com/phoreproject/obp-search-engine/crawler/crawling"
 	"github.com/phoreproject/obp-search-engine/crawler/db"
 	"github.com/phoreproject/obp-search-engine/crawler/rpc"
+	"github.com/phoreproject/obp-search-engine/crawler/server"
 	log "github.com/sirupsen/logrus"
 	"io"
 	"os"
@@ -78,6 +79,11 @@ func main() {
 	err = crawler.DB.SaveNodeUninitialized(crawling.Node{ID: config.PeerID, UserAgent: userAgent, Connections: []string{}, Profile: profile})
 	if err != nil {
 		log.Panic(err)
+	}
+
+	if *startCrawlOnDemandServer {
+		serverInstance := server.NewCrawlServer(crawler)
+		serverInstance.Serve()
 	}
 
 	crawler.MainLoop()
