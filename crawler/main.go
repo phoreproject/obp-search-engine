@@ -83,7 +83,7 @@ func main() {
 
 	if *startCrawlOnDemandServer {
 		serverInstance := server.NewCrawlServer(crawler)
-		serverInstance.Serve()
+		go serverInstance.Serve()
 	}
 
 	crawler.MainLoop()
