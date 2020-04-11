@@ -16,9 +16,9 @@ if [[ ${ALREADY_RUNNING} = true ]]; then
 else
     docker pull mysql/mysql-server:5.7
     echo "Starting mysql with password ${NEW_PASSWORD}"
-    docker exec -it ${DOCKER_INSTANCE_NAME} sh -c "echo ${NEW_PASSWORD} > /root/mysql_pass.txt"
     docker run --name=${DOCKER_INSTANCE_NAME} -d -p ${PORT}:3306 -e MYSQL_ROOT_PASSWORD=${NEW_PASSWORD} -e MYSQL_DATABASE=${DB_NAME} -e MYSQL_ROOT_HOST=% mysql/mysql-server:5.7
-    echo "Started mysql instance on localhost:${PORT} with root user and '$NEW_PASSWORD'"
+    docker exec -it ${DOCKER_INSTANCE_NAME} sh -c "echo ${NEW_PASSWORD} > /root/mysql_pass.txt"
+    echo "Started mysql instance on localhost:${PORT} with root user and ${NEW_PASSWORD}"
 fi
 
 echo ""
@@ -30,3 +30,5 @@ echo "OR connect to docker bash"
 echo "docker exec -it ${DOCKER_INSTANCE_NAME} bash"
 echo "OR connect to mysql inside docker"
 echo "docker exec -it ${DOCKER_INSTANCE_NAME} sh -c 'mysql -p${NEW_PASSWORD}'"
+echo "OR crawler mysql cmd parameter"
+echo "root@tcp(127.0.0.1:${PORT})/${DB_NAME}"
