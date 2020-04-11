@@ -34,13 +34,13 @@ func (c CrawlServer) CrawlHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c CrawlServer) Serve() {
-	log.Info("Starting crawling server.")
+	log.Info(fmt.Sprintf("Starting crawling server %d.", c.serverPort))
 	rtr := mux.NewRouter()
 	rtr.HandleFunc("/crawl/{nodeID:[a-zA-Z0-9]{46}}", c.CrawlHandler)
 	rtr.HandleFunc("/", c.HealthCheck)
 
 	http.Handle("/", rtr)
-	err := http.ListenAndServe(strconv.Itoa(c.serverPort), nil)
+	err := http.ListenAndServe(":" + strconv.Itoa(c.serverPort), nil)
 	if err != nil {
 		log.Error("Server serving error")
 		log.Error(err)
