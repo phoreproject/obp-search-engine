@@ -16,7 +16,7 @@ app.get('/logo.png', (req, res) => {
 });
 
 app.get('/', (req, res) => {
-    res.send(ConfigCreator('/').toJSON());
+    res.send(new ConfigCreator('/').toJSON());
 });
 
 app.get('/search/listings', async (req, res) => {
