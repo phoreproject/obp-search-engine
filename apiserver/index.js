@@ -15,9 +15,8 @@ app.get('/logo.png', (req, res) => {
     res.sendFile('logo.png', {root: path.join(__dirname)});
 });
 
-const config = require('./config');
 app.get('/', (req, res) => {
-    res.send(config);
+    res.send(ConfigCreator('/').toJSON());
 });
 
 app.get('/search/listings', async (req, res) => {
@@ -109,8 +108,7 @@ app.get('/search/listings', async (req, res) => {
         if (queryModerators !== undefined) {
             if (queryModerators === 'verified_mods') {
                 nodeQueryWhere.verifiedModerator = true;
-            }
-            else if (queryModerators === 'all_mods') {
+            } else if (queryModerators === 'all_mods') {
                 nodeQueryWhere.moderator = true;
             }
             // else get all
@@ -173,7 +171,6 @@ app.get('/search/listings', async (req, res) => {
                 results: []
             }
         });
-
 
         const safeSplit = function (str) {
             if (str === undefined) {
@@ -262,8 +259,7 @@ app.get('/search/listings', async (req, res) => {
             });
         }
         res.send(result);
-    }
-    catch (err) {
+    } catch (err) {
         return res.status(500).send(err);
     }
 });
@@ -271,8 +267,7 @@ app.get('/search/listings', async (req, res) => {
 app.get('/search/toptags', async (req, res) => {
     try {
         res.send(TagCache.getTags(req.query.tags));
-    }
-    catch (err) {
+    } catch (err) {
         return res.status(500).send(err);
     }
 });

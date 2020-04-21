@@ -5,18 +5,17 @@ class ConfigCreator {
         this.PHORE_WEBSITE = 'http://search.phore.io/';
         if (nsfwVisible === undefined && typeof selfLink === 'object') {
             const dictOfValues = selfLink;
-            this.selfLink = dictOfValues['selfLink'];
-            this.nsfwVisible = dictOfValues['nsfwVisible'];
+            this.selfLink = dictOfValues['selfLink'] || '/';
+            this.nsfwVisible = (dictOfValues['nsfwVisible'] === true) || false;
             this.itemRating = dictOfValues['itemRating'];
             this.queryModerators = dictOfValues['queryModerators'];
             this.sortBy = dictOfValues['sortBy'];
             this.orderType = dictOfValues['orderType'];
             this.condition = dictOfValues['condition']; // not available now
             this.shippingInfo = dictOfValues['shippingInfo']; // not available now
-        }
-        else {
-            this.selfLink = selfLink;
-            this.nsfwVisible = nsfwVisible;
+        } else {
+            this.selfLink = selfLink || '/';
+            this.nsfwVisible = (nsfwVisible === true) || false;
             this.itemRating = itemRating;
             this.queryModerators = queryModerators;
             this.sortBy = sortBy;
@@ -32,7 +31,7 @@ class ConfigCreator {
             'logo': this.PHORE_WEBSITE + 'logo.png',
 
             'links': {
-                'self':  this.PHORE_WEBSITE + this.selfLink,
+                'self': this.PHORE_WEBSITE + this.selfLink,
                 'listings': this.PHORE_WEBSITE + '/search/listings'
             },
             'options': {
@@ -78,81 +77,81 @@ class ConfigCreator {
                         }
                     ]
                 },
-                "b2_moderators":{
-                    "type":"radio",
-                    "label":"Moderation",
-                    "options":[
+                "b2_moderators": {
+                    "type": "radio",
+                    "label": "Moderation",
+                    "options": [
                         {
-                            "value":"verified_mods",
-                            "label":"Phore Verified Moderators",
+                            "value": "verified_mods",
+                            "label": "Phore Verified Moderators",
                             "checked": this.queryModerators === 'verified_mods',
-                            "default":false
+                            "default": false
                         },
                         {
-                            "value":"all_mods",
-                            "label":"All Moderators",
+                            "value": "all_mods",
+                            "label": "All Moderators",
                             "checked": this.queryModerators === 'all_mods',
-                            "default":false
+                            "default": false
                         },
                         {
-                            "value":"all_listings",
-                            "label":"All Listings",
+                            "value": "all_listings",
+                            "label": "All Listings",
                             "checked": this.queryModerators === undefined || this.queryModerators === 'all_listings',
-                            "default":true
+                            "default": true
                         }
                     ]
                 },
-                "type":{
-                    "type":"radio",
-                    "label":"Type",
-                    "options":[
+                "type": {
+                    "type": "radio",
+                    "label": "Type",
+                    "options": [
                         {
-                            "value":"all",
-                            "label":"All",
-                            "checked":this.orderType === 'all' || this.orderType === undefined,
-                            "default":true
+                            "value": "all",
+                            "label": "All",
+                            "checked": this.orderType === 'all' || this.orderType === undefined,
+                            "default": true
                         },
                         {
-                            "value":"PHYSICAL_GOOD",
-                            "label":"Physical Goods",
-                            "checked":this.orderType === 'PHYSICAL_GOOD',
-                            "default":false
+                            "value": "PHYSICAL_GOOD",
+                            "label": "Physical Goods",
+                            "checked": this.orderType === 'PHYSICAL_GOOD',
+                            "default": false
                         },
                         {
-                            "value":"CRYPTOCURRENCY",
-                            "label":"Cryptocurrency",
-                            "checked":this.orderType === 'CRYPTOCURRENCY',
-                            "default":false
+                            "value": "CRYPTOCURRENCY",
+                            "label": "Cryptocurrency",
+                            "checked": this.orderType === 'CRYPTOCURRENCY',
+                            "default": false
                         },
                         {
-                            "value":"DIGITAL_GOOD",
-                            "label":"Digital Goods",
-                            "checked":this.orderType === 'DIGITAL_GOOD',
-                            "default":false
+                            "value": "DIGITAL_GOOD",
+                            "label": "Digital Goods",
+                            "checked": this.orderType === 'DIGITAL_GOOD',
+                            "default": false
                         },
                         {
-                            "value":"SERVICE",
-                            "label":"Services",
-                            "checked":this.orderType === 'SERVICE',
-                            "default":false
+                            "value": "SERVICE",
+                            "label": "Services",
+                            "checked": this.orderType === 'SERVICE',
+                            "default": false
                         }
                     ]
                 },
-                'nsfw':{
-                    'type':'radio',
-                    'label':'Adult Content',
-                    'options':[
+                'nsfw': {
+                    'type': 'radio',
+                    'label': 'Adult Content',
+                    'options': [
                         {
-                            'value':'true',
-                            'label':'Visible',
+                            'value': 'true',
+                            'label': 'Visible',
                             'checked': this.nsfwVisible === true,
-                            'default':false
+                            'default': false
                         },
                         {
-                            'value':'false',
-                            'label':'Hidden',
+                            'value': 'false',
+                            'label': 'Hidden',
                             'checked': this.nsfwVisible !== true,
-                            'default':true
+                            'default': true
                         }
                     ]
                 },
