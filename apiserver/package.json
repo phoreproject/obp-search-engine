@@ -7,6 +7,8 @@
     "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "license": "MIT",
+  "repository": "github.com/phoreproject/obp-search-engine",
   "author": "meyer9 & anchaj",
   "dependencies": {
     "express": "^4.16.2",
