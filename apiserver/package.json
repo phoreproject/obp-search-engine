@@ -1,6 +1,6 @@
 {
   "name": "apiserver",
-  "version": "2.6.9",
+  "version": "2.7.0",
   "description": "Serves a basic Phore Marketplace search engine",
   "main": "index.js",
   "scripts": {
@@ -11,6 +11,7 @@
   "repository": "github.com/phoreproject/obp-search-engine",
   "author": "meyer9 & anchaj",
   "dependencies": {
+    "cors": "^2.8.5",
     "express": "^4.16.2",
     "moment": "^2.21.0",
     "mysql2": "^1.6.4",

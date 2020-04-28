@@ -4,6 +4,7 @@ const express = require('express');
 const app = express();
 const path = require('path');
 const moment = require('moment');
+const cors = require('cors');
 
 const ConfigCreator = require('./configCreator').ConfigCreator;
 let TagCache = require('./tagsCache').TagsCache;
@@ -11,6 +12,7 @@ TagCache = new TagCache();
 
 const ORM = require('./ORM.js');
 
+app.use(cors());
 app.get('/logo.png', (req, res) => {
     res.sendFile('logo.png', {root: path.join(__dirname)});
 });
