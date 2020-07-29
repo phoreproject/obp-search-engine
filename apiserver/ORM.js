@@ -2,11 +2,13 @@
 
 const { Sequelize, Op } = require('sequelize');
 const sequelize = new Sequelize(process.env.DATABASE_URI || 'mysql://' + process.env.RDS_USERNAME + ':' + process.env.RDS_PASSWORD + '@' + process.env.RDS_HOSTNAME + ':' + process.env.RDS_PORT + '/' + process.env.RDS_DB_NAME, {omitNull: true});
-const Item = sequelize.import('./models/item');
-const Node = sequelize.import('./models/node');
-const Moderators = sequelize.import('./models/moderators');
-const ModeratorIdsPerItem = sequelize.import('./models/moderatorIdsPerItem');
 
+const Item = require('./models/item')(sequelize, Sequelize);
+const Node = require('./models/node')(sequelize, Sequelize);
+const Moderators = require('./models/moderators')(sequelize, Sequelize);
+const ModeratorIdsPerItem = require('./models/moderatorIdsPerItem')(sequelize, Sequelize);
+
+Item.belongsTo(Node, {foreignKey: 'peerID'}); // just to hide warning.
 
 module.exports = {
     sequelize: sequelize,
