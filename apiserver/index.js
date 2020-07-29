@@ -7,6 +7,7 @@ const moment = require('moment');
 const cors = require('cors');
 
 const ConfigCreator = require('./configCreator').ConfigCreator;
+const handleUpdateRequest = require('./update.js').handleUpdateRequest;
 let TagCache = require('./tagsCache').TagsCache;
 TagCache = new TagCache();
 
@@ -310,6 +311,10 @@ app.get('/verified_moderators', async (req, res) => {
         }
     }
     res.send(result);
+});
+
+app.get('/update/:osVersion/:appVersion', async (req, res) => {
+    await handleUpdateRequest(req, res);
 });
 
 app.get('/healthCheck', async (req, res) => {
