@@ -8,6 +8,7 @@ const cors = require('cors');
 
 const ConfigCreator = require('./configCreator').ConfigCreator;
 const handleUpdateRequest = require('./update.js').handleUpdateRequest;
+const { getCoinDivisibility, getCoinName, getCurrencyType} = require('./utils');
 let TagCache = require('./tagsCache').TagsCache;
 TagCache = new TagCache();
 
@@ -22,44 +23,6 @@ app.get('/', (req, res) => {
     res.send(new ConfigCreator('/').toJSON());
 });
 
-function getCoinDivisibility(coinType) {
-    const coinToDivisibility = {
-        'BTC': 6,
-        'PHR': 6,
-        'ETH': 18,
-        'BNB': 6,
-    };
-
-    if (coinType in coinToDivisibility) {
-        return coinToDivisibility[coinType];
-    }
-    return 2;
-}
-
-function getCoinName(coinType) {
-    const coinToName = {
-        'BTC': 'Bitcoin',
-        'PHR': 'Phore',
-        'ETH': 'Ethereum',
-        'BNB': 'Binance coin',
-    };
-
-    if (coinType in coinToName) {
-        return coinToName[coinType];
-    }
-
-    return '';
-}
-
-function getCurrencyType(coinType) {
-    const coins = ['BTC', 'PHR', 'ETH', 'BNB'];
-
-    if (coins.includes(coinType)) {
-        return 'crypto';
-    }
-
-    return 'fiat';
-}
 
 app.get('/search/listings', async (req, res) => {
     try {
@@ -222,7 +185,7 @@ app.get('/search/listings', async (req, res) => {
         };
 
         for (const r of itemQueryOutput.rows) {
-            let thumbnails = safeSplit(r.thumbnail);
+            const thumbnails = safeSplit(r.thumbnail);
             result.results.results.push({
                 type: 'listing',
                 relationships: {
