@@ -22,6 +22,45 @@ app.get('/', (req, res) => {
     res.send(new ConfigCreator('/').toJSON());
 });
 
+function getCoinDivisibility(coinType) {
+    const coinToDivisibility = {
+        'BTC': 6,
+        'PHR': 6,
+        'ETH': 18,
+        'BNB': 6,
+    };
+
+    if (coinType in coinToDivisibility) {
+        return coinToDivisibility[coinType];
+    }
+    return 2;
+}
+
+function getCoinName(coinType) {
+    const coinToName = {
+        'BTC': 'Bitcoin',
+        'PHR': 'Phore',
+        'ETH': 'Ethereum',
+        'BNB': 'Binance coin',
+    };
+
+    if (coinType in coinToName) {
+        return coinToName[coinType];
+    }
+
+    return '';
+}
+
+function getCurrencyType(coinType) {
+    const coins = ['BTC', 'PHR', 'ETH', 'BNB'];
+
+    if (coins.includes(coinType)) {
+        return 'crypto';
+    }
+
+    return 'fiat';
+}
+
 app.get('/search/listings', async (req, res) => {
     try {
         const itemQueryOptions = {};
@@ -251,13 +290,28 @@ app.get('/search/listings', async (req, res) => {
                         currencyCode: r.priceCurrency,
                         modifier: r.priceModifier
                     },
+                    bigPrice: {
+                        amount: r.priceAmount,
+                        currencyCode: r.priceCurrency,
+                        modifier: r.priceModifier,
+                        divisibility: getCoinDivisibility(r.priceCurrency)
+                    },
                     nsfw: r.nsfw,
                     averageRating: parseFloat(r.averageRating),
                     ratingCount: r.ratingCount,
                     acceptedCurrencies: safeSplit(r.acceptedCurrencies),
                     coinType: r.coinType,
                     coinDivisibility: r.coinDivisibility,
-                    normalizedPrice: r.normalizedPrice
+                    normalizedPrice: r.normalizedPrice,
+                    amount: r.priceAmount,
+                    currency: {
+                        name: getCoinName(r.priceCurrency),
+                        code: r.priceCurrency,
+                        divisibility: getCoinDivisibility(r.priceCurrency),
+                        currencyType: getCurrencyType(r.priceCurrency),
+                    },
+                    shippingFromCountryCode: '', //TODO add this data
+                    shippingFromPostalCode: ''
                 }
             });
         }
