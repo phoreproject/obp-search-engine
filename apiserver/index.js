@@ -254,7 +254,7 @@ app.get('/search/listings', async (req, res) => {
                         modifier: r.priceModifier
                     },
                     bigPrice: {
-                        amount: r.priceAmount,
+                        amount: r.priceAmount.toString(),
                         currencyCode: r.priceCurrency,
                         modifier: r.priceModifier,
                         divisibility: getCoinDivisibility(r.priceCurrency)
